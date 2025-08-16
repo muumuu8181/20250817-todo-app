@@ -1,0 +1,115 @@
+{
+  "project": "template-refactoring",
+  "created": "2025-08-10T18:20:00+09:00",
+  "updated": "2025-08-10T18:20:00+09:00",
+  "description": "モジュール所有者マッピング - 複数AI並行開発用",
+  
+  "ownership": {
+    "src/services/auth.js": {
+      "owner": "AI-A",
+      "description": "Firebase認証・Googleログイン管理",
+      "status": "completed",
+      "dependencies": ["firebase.auth"],
+      "last_modified": "2025-08-10T18:20:00+09:00"
+    },
+    "src/services/database.js": {
+      "owner": "AI-B",
+      "description": "Firebase Realtime Database操作",
+      "status": "completed",
+      "dependencies": ["firebase.database"],
+      "last_modified": "2025-08-10T18:20:00+09:00"
+    },
+    "src/components/ui.js": {
+      "owner": "AI-C",
+      "description": "DOM操作・イベントハンドリング",
+      "status": "completed",
+      "dependencies": [],
+      "last_modified": "2025-08-10T18:20:00+09:00"
+    },
+    "src/features/main.js": {
+      "owner": "claude-code-opus",
+      "description": "アプリケーション統合・調整",
+      "status": "completed",
+      "dependencies": ["auth.js", "database.js", "ui.js"],
+      "last_modified": "2025-08-10T18:20:00+09:00"
+    },
+    "index.html": {
+      "owner": "claude-code-opus",
+      "description": "メインHTMLファイル（リファクタリング中）",
+      "status": "in_progress",
+      "dependencies": ["main.js"],
+      "last_modified": "2025-08-10T18:20:00+09:00"
+    },
+    "custom/styles.css": {
+      "owner": "AI-D",
+      "description": "スタイルシート",
+      "status": "untouched",
+      "dependencies": [],
+      "last_modified": null
+    },
+    "custom/app-config.js": {
+      "owner": "AI-E",
+      "description": "アプリケーション設定",
+      "status": "untouched",
+      "dependencies": [],
+      "last_modified": null
+    }
+  },
+  
+  "rules": {
+    "lock_mechanism": "作業開始時にlocks/[feature-name].lockファイルを作成",
+    "merge_strategy": "各AIは自分の担当モジュールのみ編集",
+    "conflict_resolution": "所有者が優先権を持つ",
+    "review_required": "他AIの領域を変更する場合は事前相談必須"
+  },
+  
+  "ai_roles": {
+    "AI-A": {
+      "name": "認証担当",
+      "expertise": "Firebase Auth, OAuth",
+      "modules": ["src/services/auth.js"]
+    },
+    "AI-B": {
+      "name": "データベース担当",
+      "expertise": "Firebase Realtime Database, NoSQL",
+      "modules": ["src/services/database.js"]
+    },
+    "AI-C": {
+      "name": "UI担当",
+      "expertise": "DOM操作, イベント処理, UX",
+      "modules": ["src/components/ui.js"]
+    },
+    "AI-D": {
+      "name": "スタイル担当",
+      "expertise": "CSS, レスポンシブデザイン",
+      "modules": ["custom/styles.css", "styles/"]
+    },
+    "AI-E": {
+      "name": "設定担当",
+      "expertise": "アプリ設定, カスタマイズ",
+      "modules": ["custom/app-config.js", "config/"]
+    },
+    "claude-code-opus": {
+      "name": "統合・調整担当",
+      "expertise": "アーキテクチャ, リファクタリング",
+      "modules": ["src/features/main.js", "index.html", "全体構成"]
+    }
+  },
+  
+  "working_areas": {
+    "protected": [
+      "core/",
+      ".github/",
+      "firebase.json"
+    ],
+    "shared": [
+      "docs/",
+      "ai-conversations/",
+      "examples/",
+      "tools/"
+    ],
+    "archive": [
+      "archive/"
+    ]
+  }
+}

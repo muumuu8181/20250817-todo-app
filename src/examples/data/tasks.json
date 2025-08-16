@@ -1,0 +1,36 @@
+[
+  {
+    "id": 1,
+    "title": "Learn advanced data storage",
+    "completed": true,
+    "priority": "high",
+    "notes": "Completed with examples",
+    "lastModified": "2025-08-04T09:35:30.974Z"
+  },
+  {
+    "id": 2,
+    "title": "Build awesome app",
+    "completed": false,
+    "priority": "medium"
+  },
+  {
+    "id": 3,
+    "title": "Deploy to production",
+    "completed": false,
+    "priority": "low"
+  },
+  {
+    "id": 4,
+    "title": "Write documentation",
+    "completed": false,
+    "priority": "medium",
+    "timestamp": "2025-08-04T09:35:30.890Z"
+  },
+  {
+    "id": 5,
+    "title": "Review code",
+    "completed": true,
+    "priority": "high",
+    "timestamp": "2025-08-04T09:35:30.933Z"
+  }
+]

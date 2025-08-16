@@ -1,0 +1,107 @@
+{
+  "project": "template-refactoring",
+  "phase": 1,
+  "created": "2025-08-10T18:19:00+09:00",
+  "overall_progress": 0,
+  "tasks": [
+    {
+      "id": "P1-001",
+      "category": "preparation",
+      "title": "現状のindex.html分析",
+      "description": "index.htmlの行数、責務、依存関係を分析",
+      "status": "pending",
+      "owner": "claude-code-opus",
+      "metrics": {
+        "current_lines": null,
+        "target_lines": 100,
+        "responsibilities_count": null
+      }
+    },
+    {
+      "id": "P1-002",
+      "category": "structure",
+      "title": "src/ディレクトリ構造作成",
+      "description": "src/services, src/components, src/features を作成",
+      "status": "pending",
+      "owner": "claude-code-opus",
+      "checklist": [
+        "src/services/auth.js 作成",
+        "src/services/database.js 作成",
+        "src/components/ui.js 作成",
+        "src/features/main.js 作成"
+      ]
+    },
+    {
+      "id": "P1-003",
+      "category": "refactoring",
+      "title": "認証機能の分離",
+      "description": "Firebase Auth関連コードをsrc/services/auth.jsへ移動",
+      "status": "pending",
+      "owner": "AI-A",
+      "affected_lines": {
+        "from": null,
+        "to": null
+      }
+    },
+    {
+      "id": "P1-004",
+      "category": "refactoring",
+      "title": "データベース機能の分離",
+      "description": "Firebase Database関連をsrc/services/database.jsへ移動",
+      "status": "pending",
+      "owner": "AI-B",
+      "affected_lines": {
+        "from": null,
+        "to": null
+      }
+    },
+    {
+      "id": "P1-005",
+      "category": "refactoring",
+      "title": "UI機能の分離",
+      "description": "DOM操作・イベントハンドラをsrc/components/ui.jsへ移動",
+      "status": "pending",
+      "owner": "AI-C",
+      "affected_lines": {
+        "from": null,
+        "to": null
+      }
+    },
+    {
+      "id": "P1-006",
+      "category": "testing",
+      "title": "動作確認テスト",
+      "description": "分離後の全機能動作確認",
+      "status": "pending",
+      "owner": "claude-code-opus",
+      "test_cases": [
+        "Googleログイン機能",
+        "データ保存機能",
+        "データ読み込み機能",
+        "UI更新機能",
+        "エラーハンドリング"
+      ]
+    },
+    {
+      "id": "P1-007",
+      "category": "documentation",
+      "title": "アーキテクチャ図作成",
+      "description": "モジュール構成と依存関係を1枚で説明",
+      "status": "pending",
+      "owner": "claude-code-opus"
+    }
+  ],
+  "success_criteria": {
+    "index_html_lines": "100行以下",
+    "module_separation": "単一責任原則を満たす",
+    "test_pass_rate": "100%",
+    "merge_conflicts": "0件"
+  },
+  "risks": [
+    {
+      "risk": "既存機能の破壊",
+      "mitigation": "段階的移行とテスト",
+      "backup": "archive/ディレクトリへバックアップ"
+    }
+  ]
+}

@@ -1,0 +1,840 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal App Template v0.25</title>
+    
+    <!-- カスタムスタイル -->
+    <link rel="stylesheet" href="src/custom/styles.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <!-- カスタム設定 -->
+    <script type="module" src="src/custom/app-config.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 5px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 10px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        /* スマホ対応 */
+        @media (max-width: 768px) {
+            body { padding: 3px; }
+            .container { padding: 8px; margin: 0; border-radius: 0; }
+            .weight-input { grid-template-columns: 1fr; gap: 8px; }
+            .input-card { padding: 8px; }
+        }
+        .auth-section { background: #e7f3ff; color: #0c5460; padding: 10px; border-radius: 5px; margin-bottom: 10px; text-align: center; }
+        .weight-input { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; margin: 8px 0; }
+        .input-card { border: 1px solid #ddd; padding: 8px; border-radius: 8px; }
+        
+        /* タイミングパネルのスタイル */
+        .timing-panel { 
+            background: #f8f9fa; 
+            border: 2px solid #e9ecef; 
+            border-radius: 8px; 
+            padding: 8px; 
+            margin: 5px 0; 
+        }
+        .timing-buttons { 
+            display: flex; 
+            gap: 4px; 
+            flex-wrap: wrap; 
+            justify-content: center;
+        }
+        .timing-btn { 
+            background: #6c757d; 
+            color: white; 
+            border: none; 
+            padding: 6px 8px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 11px;
+            transition: all 0.2s;
+            min-width: 70px;
+            text-align: center;
+        }
+        .timing-btn:hover {
+            transform: scale(1.05);
+        }
+        .timing-btn.selected {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .timing-buttons { gap: 3px; }
+            .timing-btn { 
+                padding: 4px 6px; 
+                font-size: 10px;
+                min-width: 60px;
+            }
+        }
+        .input-field { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin: 5px 0; font-size: 16px; }
+        .save-button { background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 16px; }
+        .save-button:hover { background: #218838; }
+        .auth-button { background: #4285f4; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .auth-button:hover { background: #357ae8; }
+        .logout-button { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .data-area { background: #f8f9fa; border: 1px solid #dee2e6; padding: 8px; border-radius: 5px; font-family: monospace; min-height: 120px; }
+        .hidden { display: none; }
+        .user-info { background: #d4edda; color: #155724; padding: 6px; border-radius: 5px; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="app-header">
+            <h1 class="app-title">📱 アプリテンプレート v0.25</h1>
+            <p class="app-subtitle">Firebase + Google認証対応 - 汎用データ管理</p>
+        </div>
+        <!-- 認証セクション -->
+        <div class="auth-section" id="authSection">
+            <h3>🔐 ログイン</h3>
+            <p>Googleアカウントでログインしてデータを保存・同期できます</p>
+            <button class="auth-button" onclick="handleGoogleLogin()">Googleでログイン</button>
+        </div>
+        <!-- ユーザー情報表示 -->
+        <div class="user-info hidden" id="userInfo">
+            <span>👤 ログイン中: <span id="userName"></span></span>
+            <button class="logout-button" onclick="handleLogout()">ログアウト</button>
+        </div>
+
+        <!-- データ入力セクション -->
+        <div class="weight-input hidden" id="weightInput">
+            <div class="input-card">
+                <h3 style="margin-top: 0; margin-bottom: 8px;">📝 データを記録</h3>
+                <input type="date" class="input-field" id="dateInput">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="number" class="input-field" id="weightValue" placeholder="値を入力" step="0.1" min="0" max="999" value="50.0" style="flex: 1;" onkeydown="handleWeightKeypress(event)">
+                    <span style="font-size: 11px; color: #666;">↑↓で調整</span>
+                </div>
+                
+                <!-- タイミング選択パネル -->
+                <div class="timing-panel">
+                    <div class="timing-buttons">
+                        <button type="button" class="timing-btn" onclick="selectTiming('起床後')" data-timing="起床後" style="background: #55a3ff;">🛏️ 起床後</button>
+                        <button type="button" class="timing-btn" onclick="selectTiming('トイレ前')" data-timing="トイレ前" style="background: #81ecec;">🚽 トイレ前</button>
+                        <button type="button" class="timing-btn" onclick="selectTiming('トイレ後')" data-timing="トイレ後" style="background: #74b9ff;">🚽 トイレ後</button>
+                        <button type="button" class="timing-btn" onclick="selectTiming('風呂前')" data-timing="風呂前" style="background: #fd79a8;">🛁 風呂前</button>
+                        <button type="button" class="timing-btn" onclick="selectTiming('風呂後')" data-timing="風呂後" style="background: #00b894;">🛀 風呂後</button>
+                        <button type="button" class="timing-btn" onclick="selectTiming('食事前')" data-timing="食事前" style="background: #e84393;">🍽️ 食事前</button>
+                        <button type="button" class="timing-btn" onclick="selectTiming('食事後')" data-timing="食事後" style="background: #a29bfe;">🍽️ 食事後</button>
+                    </div>
+                    <input type="text" class="input-field" id="selectedTiming" placeholder="選択されたタイミング" readonly style="margin-top: 4px; background: #ffffff; font-size: 12px; padding: 6px; text-align: center;">
+                </div>
+                
+                <textarea class="input-field" id="memoInput" placeholder="メモ (オプション)" rows="2"></textarea>
+                <button class="save-button" onclick="saveWeightData()">💾 保存</button>
+            </div>
+            
+            <div class="input-card">
+                <h3>📈 記録履歴</h3>
+                <div class="data-area" id="weightHistory">
+                    データを読み込み中...<br>
+                </div>
+            </div>
+        </div>
+
+        <h3>📋 アプリログ <button class="universal-copy-btn" onclick="copyLogs()" style="background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">📋 ログをコピー</button></h3>
+        <div class="data-area" id="logArea">
+            アプリテンプレート v0.25 起動完了...<br>
+            🔥 Firebase設定完了<br>
+            🔐 Google認証準備完了<br>
+        </div>
+        
+        <!-- デバッグボタンエリア -->
+        <div style="margin-top: 8px; text-align: center;">
+            <button class="universal-copy-btn" onclick="debugFirebaseConnection()" style="background: #ff6b6b; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 5px;">🔍 Firebase Debug</button>
+            <button class="universal-copy-btn" onclick="checkLoginIssues()" style="background: #ffc107; color: #212529; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 5px;">⚠️ ログイン問題診断</button>
+            <button class="universal-copy-btn" onclick="copyDebugInfo()" style="background: #17a2b8; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 5px;">📋 デバッグ情報をコピー</button>
+            <button class="universal-copy-btn" onclick="checkDatabaseStructure()" style="background: #6f42c1; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 5px;">🏗️ DB構造確認</button>
+            <button class="universal-copy-btn" onclick="checkMobileSupport()" style="background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 5px;">📱 モバイル診断</button>
+            <button class="universal-copy-btn" onclick="forceAuthCheck()" style="background: #fd7e14; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 5px;">🔄 認証状態確認</button>
+            <button class="universal-copy-btn" onclick="checkFirebaseConfig()" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 5px;">🔧 Firebase設定</button>
+            <button class="universal-copy-btn" onclick="testPopup()" style="background: #20c997; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 5px;">🧪 ポップアップテスト</button>
+            <button class="universal-copy-btn" onclick="window.open('test-error.html', '_blank')" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 5px;">🚨 エラーテスト</button>
+        </div>
+    </div>
+
+    <script>
+        // Core Firebase設定（変更禁止 - core/src/firebase-config.js参照）
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5PXKChizYDCXF_GJ4KL6Ylq9K5hCPXWE",
+            authDomain: "shares-b1b97.firebaseapp.com",
+            databaseURL: "https://shares-b1b97-default-rtdb.firebaseio.com",
+            projectId: "shares-b1b97",
+            storageBucket: "shares-b1b97.firebasestorage.app",
+            messagingSenderId: "38311063248",
+            appId: "1:38311063248:web:0d2d5726d12b305b24b8d5"
+        };
+
+        // Firebase初期化
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        let currentUser = null;
+        let selectedTimingValue = '';
+
+        // キーボードでの値調整機能
+        window.handleWeightKeypress = (event) => {
+            const weightInput = document.getElementById('weightValue');
+            const currentValue = parseFloat(weightInput.value) || 50.0;
+            
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                weightInput.value = (currentValue + 0.1).toFixed(1);
+            } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                weightInput.value = Math.max(0, currentValue - 0.1).toFixed(1);
+            }
+        };
+
+        // タイミング選択機能（改良版）
+        window.selectTiming = (timing) => {
+            selectedTimingValue = timing;
+            document.getElementById('selectedTiming').value = timing;
+            
+            // すべてのボタンから選択状態を削除
+            document.querySelectorAll('.timing-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                btn.style.opacity = '0.7';
+            });
+            
+            // 選択されたボタンに選択状態を追加
+            const selectedBtn = document.querySelector(`[data-timing="${timing}"]`);
+            if (selectedBtn) {
+                selectedBtn.classList.add('selected');
+                selectedBtn.style.opacity = '1';
+            }
+            
+            log(`⏰ 測定タイミング選択: ${timing}`);
+        };
+
+        // 認証状態の監視（改良版）
+        auth.onAuthStateChanged((user) => {
+            currentUser = user;
+            if (user) {
+                log(`✅ 認証状態確認: ${user.displayName} でログイン中`);
+                log(`📧 メール: ${user.email}`);
+                showUserInterface(user);
+                loadUserWeightData(user.uid);
+            } else {
+                log('🔒 認証状態: 未ログイン');
+                showLoginInterface();
+            }
+        });
+
+        // 初期化完了ログ
+        log('🔄 Firebase認証システム初期化完了 - 認証状態を確認中...');
+
+        // Googleログイン（改良版 - ポップアップブロック検知付き）
+        window.handleGoogleLogin = async () => {
+            try {
+                log('🔐 Googleログイン開始...');
+                const provider = new firebase.auth.GoogleAuthProvider();
+                
+                // モバイルデバイス検出（表示用）
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                
+                if (isMobile) {
+                    log('📱 モバイルデバイス検出 - ポップアップ方式でログイン');
+                    log('💡 ポップアップが途中で止まる場合は、ブラウザ設定の確認が必要です');
+                } else {
+                    log('🖥️ デスクトップデバイス - ポップアップ方式でログイン');
+                }
+                
+                // ポップアップブロック検知のためのタイムアウト設定
+                log('🪟 ポップアップウィンドウでGoogleログインを開始...');
+                
+                const loginPromise = auth.signInWithPopup(provider);
+                
+                // タイムアウト検知（5秒でポップアップが開かない場合）
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => {
+                        reject(new Error('ポップアップタイムアウト - ブロックされた可能性があります'));
+                    }, 5000);
+                });
+                
+                try {
+                    const result = await Promise.race([loginPromise, timeoutPromise]);
+                    log(`✅ ログイン成功: ${result.user.displayName}`);
+                } catch (raceError) {
+                    // タイムアウトの場合の特別処理
+                    if (raceError.message.includes('タイムアウト')) {
+                        log('⏰ ポップアップが5秒以内に開きませんでした');
+                        log('🔄 ポップアップブロック検知 - 解決方法をご案内します');
+                        throw new Error('POPUP_TIMEOUT');
+                    } else {
+                        throw raceError;
+                    }
+                }
+                
+            } catch (error) {
+                log(`❌ ログインエラー: ${error.message}`);
+                
+                // エラーの詳細情報をログに出力
+                if (error.code) {
+                    log(`- エラーコード: ${error.code}`);
+                    
+                    // 特定のエラーコードに対する解決策を提示
+                    switch(error.code) {
+                        case 'auth/unauthorized-domain':
+                            log('💡 ドメイン許可設定の問題です');
+                            log('💡 Firebase Consoleで認証ドメインを確認してください');
+                            break;
+                        case 'auth/popup-blocked':
+                            log('💡 ポップアップがブロックされました');
+                            showPopupGuide(isMobile);
+                            break;
+                        case 'auth/popup-closed-by-user':
+                            log('💡 ユーザーがポップアップを閉じました');
+                            log('💡 もう一度ログインボタンを押してください');
+                            break;
+                        case 'auth/cancelled-popup-request':
+                            log('💡 前回のポップアップがキャンセルされました');
+                            log('💡 しばらく待ってから再試行してください');
+                            break;
+                        default:
+                            if (error.message === 'POPUP_TIMEOUT') {
+                                log('⚠️ ポップアップが途中で止まりました');
+                                showPopupGuide(isMobile);
+                            } else {
+                                log('💡 ブラウザを更新してもう一度お試しください');
+                            }
+                    }
+                } else if (error.message === 'POPUP_TIMEOUT') {
+                    showPopupGuide(isMobile);
+                }
+                
+                if (error.credential) {
+                    log('- 認証情報は取得済み');
+                }
+            }
+        };
+
+        // ポップアップ許可ガイド表示
+        function showPopupGuide(isMobile) {
+            log('📖 === ポップアップ許可ガイド ===');
+            if (isMobile) {
+                log('📱 スマートフォン向け解決手順:');
+                log('1. ページ上部のアドレスバーに表示される「ポップアップがブロックされました」をタップ');
+                log('2. または、ブラウザメニュー(⋮) → 設定 → サイト設定 → ポップアップとリダイレクト → 許可');
+                log('3. Chrome: 右上⋮メニュー → 設定 → 詳細設定 → サイト設定 → ポップアップとリダイレクト');
+                log('4. Safari: 設定アプリ → Safari → ポップアップブロック → オフ');
+                log('5. 設定後、このページを更新してもう一度ログインボタンを押してください');
+            } else {
+                log('💻 PC向け解決手順:');
+                log('1. アドレスバー右端のアイコン(🚫)をクリック → 許可');
+                log('2. または、ブラウザ設定 → プライバシーとセキュリティ → ポップアップとリダイレクト → 許可');
+            }
+            log('💡 それでも解決しない場合: プライベートモードを終了するか、別のブラウザをお試しください');
+            log('🔄 ポップアップ設定を確認したら、再度「Googleでログイン」ボタンを押してください');
+            log('📖 ========================');
+        }
+
+        // ポップアップテスト機能
+        window.testPopup = () => {
+            log('🧪 ポップアップテスト開始...');
+            
+            try {
+                const testWindow = window.open('', '_blank', 'width=400,height=500');
+                
+                if (testWindow) {
+                    log('✅ ポップアップ許可済み - ログイン可能です');
+                    testWindow.close();
+                    log('💡 「Googleでログイン」ボタンを押してください');
+                } else {
+                    log('❌ ポップアップがブロックされています');
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    showPopupGuide(isMobile);
+                }
+            } catch (error) {
+                log(`❌ ポップアップテストエラー: ${error.message}`);
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                showPopupGuide(isMobile);
+            }
+        };
+
+        // ログアウト
+        window.handleLogout = async () => {
+            try {
+                await auth.signOut();
+                log('📤 ログアウト完了');
+            } catch (error) {
+                log(`❌ ログアウトエラー: ${error.message}`);
+            }
+        };
+
+        // データ保存
+        window.saveWeightData = async () => {
+            if (!currentUser) {
+                log('❌ ログインが必要です');
+                return;
+            }
+
+            const date = document.getElementById('dateInput').value;
+            const value = document.getElementById('weightValue').value;
+            const memo = document.getElementById('memoInput').value;
+
+            if (!date || !value) {
+                log('❌ 日付と値を入力してください');
+                return;
+            }
+
+            try {
+                log('💾 データを保存中...');
+                
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('ja-JP', { 
+                    hour12: false, 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                const weightData = {
+                    date: date,
+                    time: timeString,
+                    value: parseFloat(value),
+                    timing: selectedTimingValue || '',
+                    memo: memo || '',
+                    userEmail: currentUser.email,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    createdAt: now.toISOString()
+                };
+
+                const userRef = database.ref(`users/${currentUser.uid}/weights`);
+                await userRef.push(weightData);
+                log(`✅ 保存完了: ${date} ${timeString} - ${value} ${selectedTimingValue ? `(${selectedTimingValue})` : ''}`);
+                
+                // 入力フィールドをクリア（値は50.0に戻す）
+                document.getElementById('weightValue').value = '50.0';
+                document.getElementById('memoInput').value = '';
+                document.getElementById('selectedTiming').value = '';
+                selectedTimingValue = '';
+                
+                // ボタンのスタイルをリセット
+                document.querySelectorAll('.timing-btn').forEach(btn => {
+                    btn.style.opacity = '0.7';
+                    btn.classList.remove('selected');
+                });
+                
+                // データを再読み込み
+                loadUserWeightData(currentUser.uid);
+            } catch (error) {
+                log(`❌ 保存エラー: ${error.message}`);
+            }
+        };
+
+        // データ削除
+        window.deleteWeightEntry = async (entryId) => {
+            if (!currentUser) {
+                log('❌ ログインが必要です');
+                return;
+            }
+            
+            if (!confirm('この記録を削除しますか？')) {
+                return;
+            }
+            
+            try {
+                log(`🗑️ データ削除中: ${entryId}`);
+                const entryRef = database.ref(`users/${currentUser.uid}/weights/${entryId}`);
+                await entryRef.remove();
+                log(`✅ 削除完了: ${entryId}`);
+            } catch (error) {
+                log(`❌ 削除エラー: ${error.message}`);
+            }
+        };
+
+        // ユーザーのデータを読み込み
+        function loadUserWeightData(userId) {
+            const userRef = database.ref(`users/${userId}/weights`);
+            userRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                const historyDiv = document.getElementById('weightHistory');
+                
+                if (data) {
+                    const entries = Object.entries(data)
+                        .map(([key, value]) => ({ id: key, ...value }))
+                        .sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date));
+                    
+                    historyDiv.innerHTML = entries.map(entry => {
+                        let displayText = `${entry.date}`;
+                        if (entry.time) displayText += ` ${entry.time}`;
+                        displayText += `: ${entry.value || entry.weight}`;
+                        if (entry.timing) displayText += ` (${entry.timing})`;
+                        if (entry.memo) displayText += ` - ${entry.memo}`;
+                        return `<div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 0; border-bottom: 1px solid #eee;"><span>${displayText}</span><button onclick="deleteWeightEntry('${entry.id}')" style="background: #dc3545; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 10px;">🗑️</button></div>`;
+                    }).join('');
+                    
+                    log(`📈 履歴読み込み完了: ${entries.length}件`);
+                } else {
+                    historyDiv.innerHTML = 'まだデータがありません';
+                    log('📈 履歴: データなし');
+                }
+            });
+        }
+
+        // UI表示制御
+        function showUserInterface(user) {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('userInfo').classList.remove('hidden');
+            document.getElementById('weightInput').classList.remove('hidden');
+            document.getElementById('userName').textContent = user.displayName;
+            
+            // 今日の日付とデフォルト値を設定
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateInput').value = today;
+            document.getElementById('weightValue').value = '50.0';
+            
+            // タイミングボタンの初期状態設定
+            document.querySelectorAll('.timing-btn').forEach(btn => {
+                btn.style.opacity = '0.7';
+                btn.classList.remove('selected');
+            });
+        }
+
+        function showLoginInterface() {
+            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('userInfo').classList.add('hidden');
+            document.getElementById('weightInput').classList.add('hidden');
+        }
+
+        // ログ出力関数
+        function log(message) {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            logArea.innerHTML += `[${timestamp}] ${message}<br>`;
+            logArea.scrollTop = logArea.scrollHeight;
+            console.log(message);
+        }
+
+        // ログコピー機能
+        window.copyLogs = () => {
+            const logArea = document.getElementById('logArea');
+            const logText = logArea.innerText || logArea.textContent;
+            navigator.clipboard.writeText(logText).then(() => {
+                alert('✅ ログをコピーしました');
+            }).catch(() => {
+                // fallback
+                const textArea = document.createElement('textarea');
+                textArea.value = logText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('✅ ログをコピーしました');
+            });
+        };
+
+        // Firebase接続デバッグ
+        window.debugFirebaseConnection = () => {
+            log('🔍 === Firebase Debug 開始 ===');
+            
+            // 1. Firebase設定確認
+            log(`🔥 Firebase Config確認:`);
+            log(`- Project ID: ${firebaseConfig.projectId}`);
+            log(`- Database URL: ${firebaseConfig.databaseURL}`);
+            log(`- Auth Domain: ${firebaseConfig.authDomain}`);
+            
+            // 2. 認証状態確認
+            if (currentUser) {
+                log(`✅ 認証済みユーザー:`);
+                log(`- UID: ${currentUser.uid.substring(0,8)}...`);
+                log(`- Email: ${currentUser.email}`);
+                log(`- 表示名: ${currentUser.displayName}`);
+            } else {
+                log('❌ 未認証状態');
+            }
+            
+            // 3. 接続テスト
+            const connectedRef = database.ref('.info/connected');
+            connectedRef.once('value', (snapshot) => {
+                const connected = snapshot.val();
+                log(`🌐 Firebase接続状態: ${connected ? '接続中' : '未接続'}`);
+                
+                if (connected && currentUser) {
+                    // データベーステスト
+                    const testRef = database.ref(`users/${currentUser.uid}/test`);
+                    testRef.set({
+                        timestamp: firebase.database.ServerValue.TIMESTAMP,
+                        message: 'Connection test',
+                        app: 'app-template'
+                    }).then(() => {
+                        log('✅ データベース書き込みテスト成功');
+                    }).catch((error) => {
+                        log(`❌ データベース書き込みエラー: ${error.message}`);
+                        log(`- Error Code: ${error.code}`);
+                    });
+                }
+            });
+            
+            log('🔍 === Firebase Debug 完了 ===');
+        };
+
+        // モバイル環境診断
+        window.checkMobileSupport = () => {
+            log('📱 === モバイル環境診断 開始 ===');
+            
+            const userAgent = navigator.userAgent;
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+            
+            log(`🌐 ユーザーエージェント: ${userAgent}`);
+            log(`📱 モバイルデバイス判定: ${isMobile ? 'モバイル' : 'デスクトップ'}`);
+            
+            // ブラウザ判定
+            const isChrome = /Chrome/i.test(userAgent);
+            const isSafari = /Safari/i.test(userAgent) && !/Chrome/i.test(userAgent);
+            const isFirefox = /Firefox/i.test(userAgent);
+            
+            log(`🌐 ブラウザ: ${isChrome ? 'Chrome' : isSafari ? 'Safari' : isFirefox ? 'Firefox' : '不明'}`);
+            
+            // ログイン方式の推奨
+            if (isMobile) {
+                log('💡 モバイルの推奨設定:');
+                log('- Googleログインはリダイレクト方式を使用');
+                log('- ポップアップブロッカーの影響なし');
+                log('- 認証後にページが再読み込みされます');
+            }
+            
+            log('📱 === モバイル環境診断 完了 ===');
+        };
+
+        // Firebase設定診断
+        window.checkFirebaseConfig = () => {
+            log('🔧 === Firebase設定診断 開始 ===');
+            
+            // 現在のドメイン確認
+            const currentDomain = window.location.hostname;
+            const currentUrl = window.location.href;
+            log(`🌐 現在のドメイン: ${currentDomain}`);
+            log(`🔗 現在のURL: ${currentUrl}`);
+            
+            // Firebase設定情報
+            log(`🔥 Firebase設定:`);
+            log(`- Project ID: ${firebaseConfig.projectId}`);
+            log(`- Auth Domain: ${firebaseConfig.authDomain}`);
+            log(`- Database URL: ${firebaseConfig.databaseURL}`);
+            
+            // 認証ドメイン許可状況の推測
+            if (currentDomain === 'muumuu8181.github.io') {
+                log('✅ GitHub Pagesドメイン検出');
+                log('💡 Firebase Consoleでこのドメインが許可されているか確認が必要');
+            } else if (currentDomain === 'localhost' || currentDomain === '127.0.0.1') {
+                log('✅ ローカルホスト検出');
+                log('💡 通常は自動で許可されています');
+            } else {
+                log('⚠️ 不明なドメインです');
+                log('💡 Firebase Consoleの認証設定で許可が必要かもしれません');
+            }
+            
+            // モバイルブラウザでのリダイレクト制限確認
+            const userAgent = navigator.userAgent;
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+            
+            if (isMobile) {
+                log('📱 モバイルブラウザ固有の制限:');
+                log('- Safari: サードパーティCookieの制限あり');
+                log('- Chrome Mobile: ポップアップの自動ブロック');
+                log('- 解決策: リダイレクト方式またはポップアップ許可設定');
+            }
+            
+            log('🔧 === Firebase設定診断 完了 ===');
+        };
+
+        // 認証状態の強制確認
+        window.forceAuthCheck = () => {
+            log('🔍 === 認証状態強制確認 開始 ===');
+            
+            const user = auth.currentUser;
+            log(`🔐 Firebase認証状態: ${user ? `ログイン済み (${user.displayName})` : '未ログイン'}`);
+            
+            if (user) {
+                log('✅ ユーザー画面を表示します');
+                showUserInterface(user);
+                loadUserWeightData(user.uid);
+            } else {
+                log('❌ ログイン画面を表示します');
+                showLoginInterface();
+            }
+            
+            // 認証トークンの有効性確認
+            if (user) {
+                user.getIdToken(true).then(() => {
+                    log('✅ 認証トークンは有効です');
+                }).catch((tokenError) => {
+                    log(`❌ 認証トークンエラー: ${tokenError.message}`);
+                    log('💡 再ログインが必要かもしれません');
+                });
+            }
+            
+            log('🔍 === 認証状態強制確認 完了 ===');
+        };
+
+        // ログイン問題診断
+        window.checkLoginIssues = () => {
+            log('⚠️ === ログイン問題診断 開始 ===');
+            
+            // 1. プロトコルチェック
+            const protocol = window.location.protocol;
+            log(`🌐 現在のプロトコル: ${protocol}`);
+            
+            if (protocol === 'file:') {
+                log('❌ 問題発見: file://プロトコルではGoogle認証が動作しません');
+                log('✅ 解決方法:');
+                log('  1. HTTPサーバー経由でアクセス');
+                log('  2. chrome://flags で insecure origins を許可');
+                log('  3. ローカルサーバー起動 (python -m http.server 8000)');
+            } else if (protocol === 'https:' || protocol === 'http:') {
+                log('✅ プロトコル: 問題なし');
+            }
+            
+            // 2. Web Storage確認
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                log('✅ Web Storage: 利用可能');
+            } catch (e) {
+                log('❌ Web Storage: 無効');
+                log('✅ 解決方法: ブラウザ設定でCookieを有効にしてください');
+            }
+            
+            // 3. Firebaseライブラリ確認
+            if (typeof firebase !== 'undefined') {
+                log('✅ Firebase SDK: 読み込み済み');
+                log(`- Firebase Version: ${firebase.SDK_VERSION || 'Unknown'}`);
+            } else {
+                log('❌ Firebase SDK: 読み込みエラー');
+            }
+            
+            // 4. ドメイン確認
+            const domain = window.location.hostname;
+            log(`🏠 現在のドメイン: ${domain}`);
+            
+            if (domain === 'localhost' || domain === '127.0.0.1') {
+                log('✅ ローカル開発: Firebase設定で許可が必要');
+            }
+            
+            log('⚠️ === ログイン問題診断 完了 ===');
+        };
+
+        // データベース構造確認
+        window.checkDatabaseStructure = async () => {
+            if (!currentUser) {
+                log('❌ ログインが必要です');
+                return;
+            }
+            
+            log('🏗️ === データベース構造確認 開始 ===');
+            
+            try {
+                // 現在のユーザーのweightsデータ構造を確認
+                const userRef = database.ref(`users/${currentUser.uid}/weights`);
+                const snapshot = await userRef.once('value');
+                const data = snapshot.val();
+                
+                if (data) {
+                    const entries = Object.keys(data);
+                    log(`📊 現在のユーザー(${currentUser.email})のデータ:`);
+                    log(`- 記録数: ${entries.length}件`);
+                    log(`- 最新記録ID: ${entries[entries.length - 1]}`);
+                    
+                    // サンプルデータ構造を表示
+                    const sampleEntry = data[entries[0]];
+                    log(`- データ構造: ${JSON.stringify(sampleEntry, null, 2)}`);
+                } else {
+                    log('📊 現在のユーザーにはデータがありません');
+                }
+                
+                // ルートレベルの構造確認（管理者権限が必要）
+                try {
+                    const rootRef = database.ref('users');
+                    const rootSnapshot = await rootRef.once('value');
+                    const allUsers = rootSnapshot.val();
+                    
+                    if (allUsers) {
+                        const userCount = Object.keys(allUsers).length;
+                        log(`👥 全体統計:`);
+                        log(`- 登録ユーザー数: ${userCount}人`);
+                        
+                        let totalWeights = 0;
+                        Object.values(allUsers).forEach(user => {
+                            if (user.weights) {
+                                totalWeights += Object.keys(user.weights).length;
+                            }
+                        });
+                        log(`- 全体の記録数: ${totalWeights}件`);
+                    }
+                } catch (error) {
+                    log(`⚠️ 全体統計の取得に制限があります: ${error.message}`);
+                }
+                
+            } catch (error) {
+                log(`❌ 構造確認エラー: ${error.message}`);
+            }
+            
+            log('🏗️ === データベース構造確認 完了 ===');
+        };
+
+        // デバッグ情報をコピー
+        window.copyDebugInfo = () => {
+            const debugInfo = `アプリテンプレート v0.24 デバッグ情報
+=================================
+タイムスタンプ: ${new Date().toLocaleString()}
+URL: ${window.location.href}
+プロトコル: ${window.location.protocol}
+ドメイン: ${window.location.hostname}
+ユーザーエージェント: ${navigator.userAgent}
+
+Firebase設定:
+- プロジェクトID: ${firebaseConfig.projectId}
+- データベースURL: ${firebaseConfig.databaseURL}
+- 認証ドメイン: ${firebaseConfig.authDomain}
+
+認証状態: ${currentUser ? 'ログイン済み' : '未ログイン'}
+${currentUser ? `- UID: ${currentUser.uid.substring(0,8)}...\n- Email: ${currentUser.email}\n- 表示名: ${currentUser.displayName}` : ''}
+
+Firebase SDK: ${typeof firebase !== 'undefined' ? '読み込み済み' : '読み込みエラー'}
+Web Storage: ${(() => {
+    try {
+        localStorage.setItem('test', 'test');
+        localStorage.removeItem('test');
+        return '利用可能';
+    } catch (e) {
+        return '無効';
+    }
+})()}
+
+ログ内容:
+${document.getElementById('logArea').innerText}`;
+
+            navigator.clipboard.writeText(debugInfo).then(() => {
+                alert('✅ デバッグ情報をコピーしました');
+            }).catch(() => {
+                // fallback
+                const textArea = document.createElement('textarea');
+                textArea.value = debugInfo;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('✅ デバッグ情報をコピーしました');
+            });
+        };
+
+        // 初期化
+        log('🚀 アプリテンプレート v0.24 起動完了');
+        log('🔐 認証システム準備完了');
+        
+        // プロトコルチェック（自動診断）
+        if (window.location.protocol === 'file:') {
+            log('⚠️ file://プロトコル検出 - Googleログインには HTTPサーバーが必要です');
+            log('💡 解決方法: python -m http.server 8000 または chrome://flags設定');
+        }
+    </script>
+</body>
+</html>

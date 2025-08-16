@@ -1,0 +1,98 @@
+{
+  "project": {
+    "name": "universal-app-template",
+    "created": "2025-01-10T00:00:00.000Z",
+    "template": "custom",
+    "version": "0.35"
+  },
+  "app": {
+    "name": "Todo Manager",
+    "nameEn": "Todo Manager",
+    "description": "シンプルで使いやすいTODO管理アプリ",
+    "version": "0.1",
+    "author": "",
+    "license": "MIT"
+  },
+  "database": {
+    "collection": "todos",
+    "subCollections": [],
+    "structure": {
+      "timestamp": "number",
+      "createdAt": "string",
+      "updatedAt": "string",
+      "customData": "any"
+    }
+  },
+  "ui": {
+    "primaryColor": "#007bff",
+    "secondaryColor": "#6c757d",
+    "dangerColor": "#dc3545",
+    "successColor": "#00ff80",
+    "warningColor": "#ffff00",
+    "infoColor": "#00ffff",
+    "buttons": {
+      "save": "📝 TODO追加",
+      "delete": "🗑️ 削除",
+      "edit": "✏️ 編集",
+      "cancel": "❌ キャンセル",
+      "login": "Googleでログイン",
+      "logout": "ログアウト"
+    },
+    "labels": {
+      "task": "タスク内容",
+      "priority": "優先度",
+      "title": "TODO",
+      "status": "ステータス"
+    },
+    "defaultValue": 10.0,
+    "gridSize": 30,
+    "panelMode": true,
+    "gridMode": false
+  },
+  "features": {
+    "authentication": true,
+    "realtimeSync": true,
+    "offlineSupport": false,
+    "multiDevice": true,
+    "dataExport": false,
+    "dataImport": false,
+    "darkMode": false,
+    "multiLanguage": false
+  },
+  "deployment": {
+    "githubPages": true,
+    "firebaseHosting": false,
+    "customDomain": "",
+    "ssl": true
+  },
+  "development": {
+    "localServerPort": 8000,
+    "hotReload": false,
+    "debugMode": true,
+    "testFramework": "none"
+  },
+  "paths": {
+    "custom": "src/custom/",
+    "services": "src/services/",
+    "components": "src/components/",
+    "templates": "src/custom/templates/",
+    "styles": "src/custom/styles.css",
+    "config": "src/custom/app-config.js"
+  },
+  "metadata": {
+    "lastModified": "2025-01-10T00:00:00.000Z",
+    "modifiedBy": "AI Assistant",
+    "changeLog": [
+      {
+        "version": "0.34",
+        "date": "2025-01-10",
+        "changes": "グリッドトグル問題修正"
+      },
+      {
+        "version": "0.35",
+        "date": "2025-01-10",
+        "changes": "README充実化（GitHub公開手順追加）、デバッグ機能保護、日付必須化"
+      }
+    ]
+  }
+}

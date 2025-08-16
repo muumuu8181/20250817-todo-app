@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新コンポーネントテスト</title>
+    <link rel="stylesheet" href="src/custom/styles.css">
+    <link rel="stylesheet" href="src/custom/styles-responsive.css">
+</head>
+<body>
+    <div class="panels-container">
+        <h1>新コンポーネントテストページ</h1>
+        
+        <!-- Panel テスト -->
+        <div class="panel" data-panel-id="test-panel">
+            <div class="panel-header">
+                <span class="panel-number">[1]</span>
+                <span class="panel-title">パネルテスト</span>
+            </div>
+            <div class="panel-body">
+                <p>パネルコンポーネントが正常に動作しています</p>
+            </div>
+        </div>
+        
+        <!-- Form テスト -->
+        <div class="panel" data-panel-id="form-test">
+            <div class="panel-header">
+                <span class="panel-number">[2]</span>
+                <span class="panel-title">フォームテスト</span>
+            </div>
+            <div class="panel-body">
+                <div id="form-container"></div>
+            </div>
+        </div>
+        
+        <!-- Select テスト -->
+        <div class="panel" data-panel-id="select-test">
+            <div class="panel-header">
+                <span class="panel-number">[3]</span>
+                <span class="panel-title">セレクトテスト</span>
+            </div>
+            <div class="panel-body">
+                <div id="select-container"></div>
+            </div>
+        </div>
+        
+        <!-- Loading テスト -->
+        <div class="panel" data-panel-id="loading-test">
+            <div class="panel-header">
+                <span class="panel-number">[4]</span>
+                <span class="panel-title">ローディングテスト</span>
+            </div>
+            <div class="panel-body">
+                <button onclick="showLoading()">ローディング表示</button>
+                <div id="loading-container"></div>
+            </div>
+        </div>
+        
+        <!-- Alert テスト -->
+        <div class="panel" data-panel-id="alert-test">
+            <div class="panel-header">
+                <span class="panel-number">[5]</span>
+                <span class="panel-title">アラートテスト</span>
+            </div>
+            <div class="panel-body">
+                <button onclick="showAlerts()">アラート表示</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { Form } from './src/components/common/Form.js';
+        import { Select } from './src/components/common/Select.js';
+        import { Loading } from './src/components/common/Loading.js';
+        import { Alert } from './src/components/common/Alert.js';
+        
+        // Formテスト
+        const form = new Form({
+            fields: [
+                { name: 'username', label: 'ユーザー名', type: 'text', required: true },
+                { name: 'email', label: 'メール', type: 'email', required: true },
+                { name: 'comment', label: 'コメント', type: 'textarea' }
+            ],
+            submitText: '送信',
+            onSubmit: (data) => {
+                console.log('フォームデータ:', data);
+                Alert.success('フォーム送信成功！');
+            }
+        });
+        document.getElementById('form-container').appendChild(form.render());
+        
+        // Selectテスト
+        const select = new Select({
+            options: [
+                { value: 'option1', label: 'オプション1' },
+                { value: 'option2', label: 'オプション2' },
+                { value: 'option3', label: 'オプション3' }
+            ],
+            placeholder: '選択してください',
+            onChange: (value) => {
+                console.log('選択値:', value);
+            }
+        });
+        document.getElementById('select-container').appendChild(select.render());
+        
+        // Loadingテスト
+        window.showLoading = function() {
+            const loading = new Loading({
+                text: '読み込み中...',
+                type: 'spinner'
+            });
+            loading.show();
+            setTimeout(() => loading.hide(), 3000);
+        };
+        
+        // Alertテスト
+        window.showAlerts = function() {
+            Alert.success('成功メッセージ');
+            setTimeout(() => Alert.info('情報メッセージ'), 500);
+            setTimeout(() => Alert.warning('警告メッセージ'), 1000);
+            setTimeout(() => Alert.error('エラーメッセージ'), 1500);
+        };
+    </script>
+</body>
+</html>

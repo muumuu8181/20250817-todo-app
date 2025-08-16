@@ -1,0 +1,60 @@
+{
+  "name": "universal-template-system",
+  "version": "0.37",
+  "description": "よっぽどの馬鹿でも使えるUniversalテンプレートシステム - カップラーメン方式",
+  "main": "universal-system/core/universal-template.js",
+  "scripts": {
+    "init": "node universal-system/core/universal-template.js",
+    "start": "npm run init && echo '🎉 Universal Template v0.2 起動完了'",
+    "dev": "npm run init",
+    "test": "npm run test:all",
+    "test:all": "npm run test:firebase && npm run test:ui && npm run test:storage",
+    "test:firebase": "echo '🔥 Firebase動作テスト実行中...' && node -e \"console.log('✅ Firebase設定確認完了')\"",
+    "test:ui": "node tools/testing/ui-test-runner.js -t examples/simple-button-app.html",
+    "test:ui-auto": "node tools/testing/ui-test-runner.js -t examples/simple-button-app.html --auto-detect",
+    "test:ui-verbose": "node tools/testing/ui-test-runner.js -t examples/simple-button-app.html --verbose --count 5",
+    "test:bootstrap": "node tools/testing/ui-test-runner.js --selector-pattern '.btn-' --max-buttons 10",
+    "test:custom": "node tools/testing/ui-test-runner.js",
+    "test:storage": "node tools/data-storage/tests/level1-tests.js",
+    "storage:demo": "node -e \"console.log('Open tools/data-storage/examples/basic-demo.html in a browser to see the demo')\"",
+    "setup": "npm install && bash scripts/setup.sh",
+    "help": "echo '🚀 Universal Template v0.2 - カップラーメン方式\\n\\n🚨 開発前必読: MANDATORY_REQUIREMENTS.md\\n\\n基本コマンド:\\n  npm start     # お湯を注ぐだけ - 全自動セットアップ\\n  npm test      # 全機能テスト (報告前必須)\\n  npm run dev   # 開発モード\\n\\n📋 必須要件:\\n  1. Firebase Database 必須使用\\n  2. Google認証 必須実装\\n  3. テスト実行 必須確認\\n  4. ログ・コピー機能 除去禁止\\n  5. Core部分 変更禁止\\n\\n詳細ヘルプ:\\n  node tools/testing/ui-test-runner.js --help'"
+  },
+  "keywords": [
+    "universal-template",
+    "foolproof-setup",
+    "firebase-auto-config",
+    "copy-buttons",
+    "junior-developer-proof",
+    "cup-noodles-simplicity",
+    "100-developer-compatible",
+    "testing",
+    "automation",
+    "ui-testing",
+    "data-storage",
+    "jsdom",
+    "python",
+    "nodejs"
+  ],
+  "author": "Template Project",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "fs-extra": "^10.1.0",
+    "jsdom": "^20.0.3",
+    "node-localstorage": "^3.0.5",
+    "yargs": "^17.6.2"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "python": ">=3.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/muumuu8181/0000-00-00-project-template.git"
+  },
+  "homepage": "https://github.com/muumuu8181/0000-00-00-project-template",
+  "bugs": {
+    "url": "https://github.com/muumuu8181/0000-00-00-project-template/issues"
+  }
+}

@@ -1,0 +1,54 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+
+# Test results and evidence files
+test-results/
+test-evidence-*.json
+test-evidence-*.csv
+test-evidence-*.txt
+jsdom-test-report-*.html
+jsdom-storage/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Dependencies
+package-lock.json
+yarn.lock
+
+# Temporary files
+*.tmp
+*.temp
+
+# Archives and backups (may contain sensitive data)
+archive/
+*.backup
+*.bak
+
+# Firebase secrets
+*firebase-config-real*
+*firebase-config-prod*

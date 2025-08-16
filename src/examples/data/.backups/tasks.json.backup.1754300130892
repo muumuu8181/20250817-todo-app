@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "title": "Learn data storage",
+    "completed": false,
+    "priority": "high"
+  },
+  {
+    "id": 2,
+    "title": "Build awesome app",
+    "completed": false,
+    "priority": "medium"
+  },
+  {
+    "id": 3,
+    "title": "Deploy to production",
+    "completed": false,
+    "priority": "low"
+  }
+]

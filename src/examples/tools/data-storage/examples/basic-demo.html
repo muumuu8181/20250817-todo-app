@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Storage Level 1 Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .demo-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .demo-section:last-child {
+            border-bottom: none;
+        }
+        h1 { color: #333; }
+        h2 { color: #666; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .error { border-color: #dc3545; background: #f8d7da; }
+        .success { border-color: #28a745; background: #d4edda; }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.online { background: #d4edda; color: #155724; }
+        .status.offline { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="status" id="status">Checking...</div>
+    
+    <h1>📁 Data Storage Level 1 Demo</h1>
+    
+    <div class="container">
+        <div class="demo-section">
+            <h2>System Status</h2>
+            <button onclick="checkHealth()">Check Health</button>
+            <button onclick="getStats()">Get Statistics</button>
+            <button onclick="listCollections()">List Collections</button>
+            <div id="system-result" class="result"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Create Sample Data</h2>
+            <button onclick="createSampleTasks()">Create Sample Tasks</button>
+            <button onclick="createSampleUsers()">Create Sample Users</button>
+            <button onclick="createSampleLogs()">Create Sample Logs</button>
+            <div id="create-result" class="result"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>CRUD Operations</h2>
+            <input type="text" id="collection-name" placeholder="Collection name (e.g., tasks)" value="demo_tasks">
+            <textarea id="item-data" placeholder="JSON data (e.g., {&quot;title&quot;: &quot;Test Task&quot;, &quot;completed&quot;: false})" rows="3">{"title": "New Task", "description": "Demo task", "completed": false}</textarea>
+            
+            <div>
+                <button onclick="addItem()">Add Item</button>
+                <button onclick="loadCollection()">Load Collection</button>
+                <button onclick="saveCollection()">Save Collection</button>
+            </div>
+            
+            <input type="number" id="item-index" placeholder="Item index for update/delete" value="0">
+            <div>
+                <button onclick="updateItem()">Update Item</button>
+                <button onclick="deleteItem()">Delete Item</button>
+            </div>
+            
+            <div id="crud-result" class="result"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>CSV Export</h2>
+            <input type="text" id="export-collection" placeholder="Collection to export" value="demo_tasks">
+            <input type="text" id="export-filename" placeholder="Export filename (optional)" value="">
+            <button onclick="exportToCSV()">Export to CSV</button>
+            <div id="export-result" class="result"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Batch Operations</h2>
+            <button onclick="batchAddTasks()">Batch Add Tasks</button>
+            <button onclick="resetStorage()">Reset All Data</button>
+            <div id="batch-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Note: This is a client-side demo. In a real Node.js application,
+        // you would use require() to import the StorageManager.
+        
+        // Simulate storage operations for demo purposes
+        class DemoStorageManager {
+            constructor() {
+                this.data = JSON.parse(localStorage.getItem('demo_storage') || '{}');
+                this.initialized = true;
+            }
+
+            async save(collection, data) {
+                this.data[collection] = data;
+                localStorage.setItem('demo_storage', JSON.stringify(this.data));
+                return { 
+                    success: true, 
+                    collection, 
+                    recordCount: Array.isArray(data) ? data.length : 1 
+                };
+            }
+
+            async load(collection) {
+                const data = this.data[collection];
+                if (data === undefined) {
+                    return { success: false, error: `Collection '${collection}' not found` };
+                }
+                return { 
+                    success: true, 
+                    collection, 
+                    data,
+                    recordCount: Array.isArray(data) ? data.length : 1
+                };
+            }
+
+            async add(collection, item) {
+                let data = this.data[collection] || [];
+                if (!Array.isArray(data)) data = [data];
+                
+                item.timestamp = new Date().toISOString();
+                data.push(item);
+                return await this.save(collection, data);
+            }
+
+            async update(collection, index, updatedItem) {
+                const loadResult = await this.load(collection);
+                if (!loadResult.success) return loadResult;
+                
+                if (!Array.isArray(loadResult.data)) {
+                    return { success: false, error: 'Collection is not an array' };
+                }
+                
+                if (index < 0 || index >= loadResult.data.length) {
+                    return { success: false, error: 'Index out of bounds' };
+                }
+                
+                updatedItem.lastModified = new Date().toISOString();
+                loadResult.data[index] = updatedItem;
+                return await this.save(collection, loadResult.data);
+            }
+
+            async delete(collection, index) {
+                const loadResult = await this.load(collection);
+                if (!loadResult.success) return loadResult;
+                
+                if (!Array.isArray(loadResult.data)) {
+                    return { success: false, error: 'Collection is not an array' };
+                }
+                
+                if (index < 0 || index >= loadResult.data.length) {
+                    return { success: false, error: 'Index out of bounds' };
+                }
+                
+                const deletedItem = loadResult.data[index];
+                loadResult.data.splice(index, 1);
+                await this.save(collection, loadResult.data);
+                
+                return { success: true, deletedItem, remainingCount: loadResult.data.length };
+            }
+
+            async listCollections() {
+                return { 
+                    success: true, 
+                    collections: Object.keys(this.data),
+                    count: Object.keys(this.data).length
+                };
+            }
+
+            async getStats() {
+                const stats = { totalCollections: Object.keys(this.data).length, collections: {} };
+                
+                for (const [collection, data] of Object.entries(this.data)) {
+                    stats.collections[collection] = {
+                        recordCount: Array.isArray(data) ? data.length : 1,
+                        isArray: Array.isArray(data)
+                    };
+                }
+                
+                return { success: true, stats };
+            }
+
+            async healthCheck() {
+                return {
+                    success: true,
+                    status: 'healthy',
+                    level: 1,
+                    initialized: true,
+                    baseDir: 'localStorage',
+                    collections: Object.keys(this.data),
+                    totalCollections: Object.keys(this.data).length
+                };
+            }
+
+            async exportCSV(collection) {
+                const loadResult = await this.load(collection);
+                if (!loadResult.success) return loadResult;
+                
+                return {
+                    success: true,
+                    filename: `${collection}_export.csv`,
+                    message: 'CSV export simulated (would save to file in Node.js)'
+                };
+            }
+
+            async batchAdd(collection, items) {
+                let successful = 0;
+                for (const item of items) {
+                    const result = await this.add(collection, item);
+                    if (result.success) successful++;
+                }
+                
+                return {
+                    success: successful === items.length,
+                    total: items.length,
+                    successful,
+                    failed: items.length - successful
+                };
+            }
+
+            async reset() {
+                this.data = {};
+                localStorage.removeItem('demo_storage');
+                return { success: true, message: 'All data cleared' };
+            }
+        }
+
+        const storage = new DemoStorageManager();
+
+        function displayResult(elementId, result) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(result, null, 2);
+            element.className = result.success ? 'result success' : 'result error';
+        }
+
+        async function checkHealth() {
+            const result = await storage.healthCheck();
+            displayResult('system-result', result);
+            
+            const statusElement = document.getElementById('status');
+            if (result.success) {
+                statusElement.textContent = 'Online';
+                statusElement.className = 'status online';
+            } else {
+                statusElement.textContent = 'Offline';
+                statusElement.className = 'status offline';
+            }
+        }
+
+        async function getStats() {
+            const result = await storage.getStats();
+            displayResult('system-result', result);
+        }
+
+        async function listCollections() {
+            const result = await storage.listCollections();
+            displayResult('system-result', result);
+        }
+
+        async function createSampleTasks() {
+            const tasks = [
+                { title: "Learn Data Storage", completed: false, priority: "high" },
+                { title: "Build Demo App", completed: true, priority: "medium" },
+                { title: "Write Documentation", completed: false, priority: "low" }
+            ];
+            const result = await storage.save('sample_tasks', tasks);
+            displayResult('create-result', result);
+        }
+
+        async function createSampleUsers() {
+            const users = [
+                { name: "Alice", email: "alice@example.com", role: "admin" },
+                { name: "Bob", email: "bob@example.com", role: "user" }
+            ];
+            const result = await storage.save('sample_users', users);
+            displayResult('create-result', result);
+        }
+
+        async function createSampleLogs() {
+            const logs = [
+                { level: "info", message: "Application started", source: "app" },
+                { level: "warning", message: "Low disk space", source: "system" },
+                { level: "error", message: "Database connection failed", source: "db" }
+            ];
+            const result = await storage.save('sample_logs', logs);
+            displayResult('create-result', result);
+        }
+
+        async function addItem() {
+            const collection = document.getElementById('collection-name').value;
+            const itemText = document.getElementById('item-data').value;
+            
+            try {
+                const item = JSON.parse(itemText);
+                const result = await storage.add(collection, item);
+                displayResult('crud-result', result);
+            } catch (error) {
+                displayResult('crud-result', { success: false, error: 'Invalid JSON: ' + error.message });
+            }
+        }
+
+        async function loadCollection() {
+            const collection = document.getElementById('collection-name').value;
+            const result = await storage.load(collection);
+            displayResult('crud-result', result);
+        }
+
+        async function saveCollection() {
+            const collection = document.getElementById('collection-name').value;
+            const itemText = document.getElementById('item-data').value;
+            
+            try {
+                const data = JSON.parse(itemText);
+                const result = await storage.save(collection, data);
+                displayResult('crud-result', result);
+            } catch (error) {
+                displayResult('crud-result', { success: false, error: 'Invalid JSON: ' + error.message });
+            }
+        }
+
+        async function updateItem() {
+            const collection = document.getElementById('collection-name').value;
+            const index = parseInt(document.getElementById('item-index').value);
+            const itemText = document.getElementById('item-data').value;
+            
+            try {
+                const item = JSON.parse(itemText);
+                const result = await storage.update(collection, index, item);
+                displayResult('crud-result', result);
+            } catch (error) {
+                displayResult('crud-result', { success: false, error: 'Invalid JSON: ' + error.message });
+            }
+        }
+
+        async function deleteItem() {
+            const collection = document.getElementById('collection-name').value;
+            const index = parseInt(document.getElementById('item-index').value);
+            const result = await storage.delete(collection, index);
+            displayResult('crud-result', result);
+        }
+
+        async function exportToCSV() {
+            const collection = document.getElementById('export-collection').value;
+            const filename = document.getElementById('export-filename').value;
+            const result = await storage.exportCSV(collection, filename);
+            displayResult('export-result', result);
+        }
+
+        async function batchAddTasks() {
+            const tasks = [
+                { title: "Task 1", completed: false },
+                { title: "Task 2", completed: false },
+                { title: "Task 3", completed: true }
+            ];
+            const result = await storage.batchAdd('batch_tasks', tasks);
+            displayResult('batch-result', result);
+        }
+
+        async function resetStorage() {
+            if (confirm('This will delete all data. Are you sure?')) {
+                const result = await storage.reset();
+                displayResult('batch-result', result);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', checkHealth);
+    </script>
+</body>
+</html>

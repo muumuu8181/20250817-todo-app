@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal App Template v0.25</title>
+    
+    <!-- カスタムスタイル -->
+    <link rel="stylesheet" href="src/custom/styles.css">
+    <link rel="stylesheet" href="src/custom/styles-responsive.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <!-- カスタム設定 -->
+    <script type="module" src="src/custom/app-config.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="panels-container">
+            <!-- パネル1: メイン -->
+            <div class="panel" data-panel-id="main">
+                <div class="panel-header">
+                    <span class="panel-number">[1]</span>
+                    <span class="panel-title">メイン</span>
+                </div>
+                <div class="panel-body">
+                    <h1>📊 Universal App Template <span style="font-size: 0.7em; color: #666;">v0.25</span></h1>
+                    
+                    <!-- ログイン画面 -->
+                    <div id="loginScreen" class="auth-section">
+                        <h3>🔐 ログイン</h3>
+                        <p>Googleアカウントでログインしてデータを保存・同期できます</p>
+                        <button id="loginBtn" onclick="handleGoogleLogin()" class="btn btn-primary">
+                            <span>🔑 Googleでログイン</span>
+                        </button>
+                    </div>
+                    
+                    <!-- ユーザー画面 -->
+                    <div id="userScreen" style="display: none;">
+                        <div class="user-info">
+                            <span>👤 ログイン中: <span id="userName"></span></span>
+                            <button class="btn logout-button" onclick="handleLogout()">ログアウト</button>
+                        </div>
+                        
+                        <div id="main-content">
+                            <!-- メインコンテンツ -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- パネル2: データ -->
+            <div class="panel" data-panel-id="data">
+                <div class="panel-header">
+                    <span class="panel-number">[2]</span>
+                    <span class="panel-title">データ</span>
+                </div>
+                <div class="panel-body">
+                    <div id="data-content">
+                        <h3>📈 データ管理</h3>
+                        <div class="data-area" id="dataDisplay">
+                            データ表示エリア
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- パネル3: 設定 -->
+            <div class="panel" data-panel-id="settings">
+                <div class="panel-header">
+                    <span class="panel-number">[3]</span>
+                    <span class="panel-title">設定</span>
+                </div>
+                <div class="panel-body">
+                    <div id="settings-content">
+                        <h3>⚙️ アプリ設定</h3>
+                        <div class="settings-area">
+                            <p>設定項目をここに配置</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- パネル4: ツール（折りたたみ） -->
+            <div class="panel collapsed" data-panel-id="tools">
+                <div class="panel-header" onclick="togglePanel(this)">
+                    <span class="panel-number">[4]</span>
+                    <span class="panel-title">ツール</span>
+                    <button class="panel-toggle">▶</button>
+                </div>
+                <div class="panel-body hidden">
+                    <div id="tools-content">
+                        <h3>🛠️ ツール</h3>
+                        <div class="btn-group">
+                            <button onclick="checkFirebase()" class="btn">Firebase接続確認</button>
+                            <button onclick="checkDataStructure()" class="btn">データ構造確認</button>
+                            <button onclick="testDataSave()" class="btn">データ保存テスト</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- パネル5: デバッグ（折りたたみ） -->
+            <div class="panel collapsed panel-debug" data-panel-id="debug">
+                <div class="panel-header" onclick="togglePanel(this)">
+                    <span class="panel-number">[5]</span>
+                    <span class="panel-title">デバッグ</span>
+                    <button class="panel-toggle">▶</button>
+                </div>
+                <div class="panel-body hidden">
+                    <div id="debug-content">
+                        <h3>🐛 デバッグ</h3>
+                        <div class="btn-group">
+                            <button onclick="toggleDebugConsole()" class="btn">コンソール表示</button>
+                            <button onclick="checkLoginIssues()" class="btn">ログイン診断</button>
+                            <button onclick="forceAuthCheck()" class="btn">認証状態確認</button>
+                        </div>
+                        <div id="debugConsole" style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; display: none;">
+                            <h4>🐛 デバッグコンソール</h4>
+                            <div id="debugOutput"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Firebase設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5PXKChizYDCXF_GJ4KL6Ylq9K5hCPXWE",
+            authDomain: "shares-b1b97.firebaseapp.com",
+            projectId: "shares-b1b97",
+            storageBucket: "shares-b1b97.appspot.com",
+            messagingSenderId: "1050119774327",
+            appId: "1:1050119774327:web:dc603e4cf32c1c652798ec",
+            databaseURL: "https://shares-b1b97-default-rtdb.firebaseio.com"
+        };
+        
+        // Firebase初期化
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+        
+        // パネル切り替え
+        function togglePanel(header) {
+            const panel = header.parentElement;
+            const body = panel.querySelector('.panel-body');
+            const toggle = header.querySelector('.panel-toggle');
+            
+            panel.classList.toggle('collapsed');
+            body.classList.toggle('hidden');
+            toggle.textContent = panel.classList.contains('collapsed') ? '▶' : '▼';
+        }
+        
+        // デバッグコンソール表示切り替え
+        function toggleDebugConsole() {
+            const console = document.getElementById('debugConsole');
+            console.style.display = console.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        // ログ出力
+        function log(message) {
+            const debugOutput = document.getElementById('debugOutput');
+            if (debugOutput) {
+                const timestamp = new Date().toLocaleTimeString();
+                debugOutput.innerHTML += `[${timestamp}] ${message}<br>`;
+                debugOutput.scrollTop = debugOutput.scrollHeight;
+            }
+            console.log(message);
+        }
+        
+        // Googleログイン
+        async function handleGoogleLogin() {
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
+                log(`✅ ログイン成功: ${result.user.displayName}`);
+            } catch (error) {
+                log(`❌ ログインエラー: ${error.message}`);
+            }
+        }
+        
+        // ログアウト
+        async function handleLogout() {
+            try {
+                await auth.signOut();
+                log('✅ ログアウト成功');
+            } catch (error) {
+                log(`❌ ログアウトエラー: ${error.message}`);
+            }
+        }
+        
+        // 認証状態監視
+        auth.onAuthStateChanged((user) => {
+            const loginScreen = document.getElementById('loginScreen');
+            const userScreen = document.getElementById('userScreen');
+            const userName = document.getElementById('userName');
+            
+            if (user) {
+                loginScreen.style.display = 'none';
+                userScreen.style.display = 'block';
+                userName.textContent = user.displayName || user.email;
+                log(`👤 ユーザー認証: ${user.displayName}`);
+            } else {
+                loginScreen.style.display = 'block';
+                userScreen.style.display = 'none';
+                log('👤 未認証状態');
+            }
+        });
+        
+        // Firebase接続確認
+        function checkFirebase() {
+            log('🔍 Firebase接続確認中...');
+            if (firebase.apps.length > 0) {
+                log('✅ Firebase接続: 正常');
+            } else {
+                log('❌ Firebase接続: 失敗');
+            }
+        }
+        
+        // データ構造確認
+        async function checkDataStructure() {
+            log('🔍 データ構造確認中...');
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    log('❌ ログインが必要です');
+                    return;
+                }
+                
+                const snapshot = await database.ref(`users/${user.uid}`).once('value');
+                const data = snapshot.val();
+                log(`📊 データ構造: ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`❌ エラー: ${error.message}`);
+            }
+        }
+        
+        // データ保存テスト
+        async function testDataSave() {
+            log('🔍 データ保存テスト中...');
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    log('❌ ログインが必要です');
+                    return;
+                }
+                
+                const testData = {
+                    timestamp: Date.now(),
+                    message: 'テストデータ',
+                    user: user.displayName
+                };
+                
+                await database.ref(`users/${user.uid}/test`).push(testData);
+                log('✅ データ保存成功');
+            } catch (error) {
+                log(`❌ エラー: ${error.message}`);
+            }
+        }
+        
+        // ログイン問題診断
+        function checkLoginIssues() {
+            log('⚠️ ログイン問題診断開始...');
+            
+            // プロトコルチェック
+            const protocol = window.location.protocol;
+            log(`🌐 プロトコル: ${protocol}`);
+            
+            if (protocol === 'file:') {
+                log('❌ file://プロトコルではGoogle認証が動作しません');
+                log('✅ 解決方法: HTTPサーバー経由でアクセス');
+            } else {
+                log('✅ プロトコル: 正常');
+            }
+            
+            // Cookieチェック
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                log('✅ LocalStorage: 正常');
+            } catch (e) {
+                log('❌ LocalStorage: 無効');
+            }
+            
+            log('⚠️ 診断完了');
+        }
+        
+        // 認証状態強制確認
+        function forceAuthCheck() {
+            log('🔍 認証状態確認中...');
+            const user = auth.currentUser;
+            if (user) {
+                log(`✅ ログイン済み: ${user.displayName}`);
+            } else {
+                log('❌ 未ログイン');
+            }
+        }
+        
+        // 初期化完了
+        log('🚀 Universal App Template v0.25 起動完了');
+        log('🔥 Firebase初期化完了');
+        log('🔐 Google認証準備完了');
+    </script>
+</body>
+</html>

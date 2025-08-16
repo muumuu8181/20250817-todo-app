@@ -1,0 +1,257 @@
+/* ============================================================ */
+/* 🎨 カスタムスタイル - 自由に変更可能 */
+/* ============================================================ */
+
+:root {
+    /* カラーテーマ（自由にカスタマイズ可能） */
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    
+    /* フォント設定 */
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-size-base: 16px;
+    --font-size-small: 14px;
+    --font-size-large: 18px;
+    
+    /* スペーシング */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    
+    /* ボーダー・影 */
+    --border-radius: 8px;
+    --box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    --border-color: #dee2e6;
+}
+
+/* アプリ全体のスタイル（カスタマイズ可能） */
+.app-container {
+    font-family: var(--font-family);
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+    background-color: var(--light-color);
+    min-height: 100vh;
+}
+
+/* ヘッダー部分（カスタマイズ可能） */
+.app-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.app-title {
+    color: var(--primary-color);
+    font-size: calc(var(--font-size-base) * 1.8);
+    margin-bottom: var(--spacing-sm);
+}
+
+.app-subtitle {
+    color: var(--secondary-color);
+    font-size: var(--font-size-small);
+}
+
+/* メイン入力エリア（カスタマイズ可能） */
+.input-section {
+    background: white;
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.weight-input-group {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.weight-input {
+    flex: 1;
+    padding: var(--spacing-md);
+    font-size: var(--font-size-large);
+    text-align: center;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    transition: border-color 0.3s ease;
+}
+
+.weight-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+}
+
+.weight-unit {
+    font-size: var(--font-size-large);
+    font-weight: bold;
+    color: var(--secondary-color);
+}
+
+/* タイミングボタン（カスタマイズ可能） */
+.timing-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+.timing-button {
+    padding: var(--spacing-md);
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-small);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--light-color);
+    color: var(--dark-color);
+}
+
+.timing-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
+}
+
+.timing-button.active {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: var(--box-shadow);
+}
+
+/* アクションボタン（カスタマイズ可能） */
+.action-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+}
+
+.btn {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #545b62;
+    transform: translateY(-1px);
+}
+
+/* 履歴セクション（カスタマイズ可能） */
+.history-section {
+    background: white;
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.history-item {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    background-color: var(--light-color);
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--primary-color);
+}
+
+.history-date {
+    font-weight: bold;
+    color: var(--dark-color);
+}
+
+.history-details {
+    font-size: var(--font-size-small);
+    color: var(--secondary-color);
+    margin-top: var(--spacing-xs);
+}
+
+/* メモ入力（カスタマイズ可能） */
+.memo-input {
+    width: 100%;
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    resize: vertical;
+    min-height: 60px;
+}
+
+/* レスポンシブ対応（カスタマイズ可能） */
+@media (max-width: 768px) {
+    .app-container {
+        padding: var(--spacing-md);
+    }
+    
+    .weight-input-group {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .timing-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn {
+        width: 100%;
+        max-width: 200px;
+    }
+}
+
+/* ダークモード対応（オプション） */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --light-color: #2d3748;
+        --dark-color: #e2e8f0;
+        --border-color: #4a5568;
+    }
+    
+    body {
+        background-color: #1a202c;
+        color: var(--dark-color);
+    }
+    
+    .app-container {
+        background-color: #2d3748;
+    }
+    
+    .input-section,
+    .history-section {
+        background-color: #4a5568;
+    }
+}

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>エラー収集システム テスト</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .test-btn { background: #dc3545; color: white; border: none; padding: 10px 20px; margin: 10px; border-radius: 5px; cursor: pointer; }
+        .test-btn:hover { background: #c82333; }
+        .info-btn { background: #17a2b8; }
+        .info-btn:hover { background: #138496; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="text-align: right; margin-bottom: 10px;">
+            <a href="index.html" style="color: #007bff; text-decoration: none;">← メインページに戻る</a>
+        </div>
+        <h1>🚨 エラー収集システム テスト</h1>
+        <p>このページでは意図的にエラーを発生させて、エラー収集システムの動作を確認できます。</p>
+        
+        <h3>テスト用エラー生成ボタン</h3>
+        <button class="test-btn" onclick="testJavaScriptError()">JavaScript エラー</button>
+        <button class="test-btn" onclick="testPromiseRejection()">Promise Rejection</button>
+        <button class="test-btn" onclick="testFirebaseError()">Firebase エラー</button>
+        <button class="test-btn" onclick="testManualReport()">手動エラー報告</button>
+        
+        <h3>システム情報</h3>
+        <button class="test-btn info-btn" onclick="showErrorCollectorStatus()">収集システム状況</button>
+        <button class="test-btn info-btn" onclick="testConsoleLog()">デバッグログ</button>
+        <button class="test-btn info-btn" onclick="showFirebasePermissionHelp()">🔧 権限エラー対処法</button>
+        <button class="test-btn info-btn" onclick="checkFirebaseData()">🔍 Firebase確認</button>
+        
+        <div id="status" style="background: #e9ecef; padding: 15px; margin-top: 20px; border-radius: 5px;">
+            <h4>ステータス:</h4>
+            <pre id="statusContent">エラー収集システム読み込み中...</pre>
+        </div>
+
+        <div id="errorLog" style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; margin-top: 20px; border-radius: 5px; min-height: 150px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h4 style="margin: 0;">🚨 エラーテストログ:</h4>
+                <div>
+                    <button class="test-btn info-btn" onclick="copyErrorLog()" style="padding: 5px 10px; font-size: 12px; margin-right: 5px;">📋 コピー</button>
+                    <button class="test-btn" onclick="clearErrorLog()" style="background: #6c757d; padding: 5px 10px; font-size: 12px;">🗑️ クリア</button>
+                </div>
+            </div>
+            <div id="errorLogContent" style="font-family: monospace; font-size: 12px; white-space: pre-wrap;">エラーテスト待機中...\n</div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        // Firebase設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5PXKChizYDCXF_GJ4KL6Ylq9K5hCPXWE",
+            authDomain: "shares-b1b97.firebaseapp.com",
+            databaseURL: "https://shares-b1b97-default-rtdb.firebaseio.com",
+            projectId: "shares-b1b97",
+            storageBucket: "shares-b1b97.firebasestorage.app",
+            messagingSenderId: "38311063248",
+            appId: "1:38311063248:web:0d2d5726d12b305b24b8d5"
+        };
+
+        // Firebase初期化
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // 簡易エラー収集システム
+        class SimpleErrorCollector {
+            constructor() {
+                this.initialized = false;
+                this.errorCount = 0;
+                this.setupGlobalHandlers();
+            }
+
+            setupGlobalHandlers() {
+                window.addEventListener('error', (event) => {
+                    this.collectError({
+                        type: 'javascript-error',
+                        message: event.message,
+                        filename: event.filename,
+                        lineno: event.lineno,
+                        error: event.error
+                    });
+                });
+
+                window.addEventListener('unhandledrejection', (event) => {
+                    this.collectError({
+                        type: 'promise-rejection',
+                        message: event.reason?.message || String(event.reason),
+                        error: event.reason
+                    });
+                });
+
+                this.initialized = true;
+            }
+
+            collectError(errorInfo) {
+                this.errorCount++;
+                const errorData = {
+                    id: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    appName: "Error Test Page",
+                    appVersion: "0.2.1",
+                    timestamp: Date.now(),
+                    type: errorInfo.type,
+                    message: errorInfo.message,
+                    stack: errorInfo.error?.stack || 'No stack trace',
+                    userAgent: navigator.userAgent
+                };
+
+                // Firebaseに保存
+                database.ref('system/errors').push(errorData).then(() => {
+                    console.log('🚨 エラー収集完了:', errorData.id);
+                    if (window.addLog) {
+                        addLog(`✅ Firebase保存成功: ${errorData.id}`);
+                    }
+                }).catch((error) => {
+                    console.error('エラー保存失敗:', error);
+                    if (window.addLog) {
+                        addLog(`❌ Firebase保存失敗: ${error.message}`, true);
+                    }
+                });
+            }
+
+            reportError(message, details = {}) {
+                this.collectError({
+                    type: 'manual-report',
+                    message: message,
+                    details: details,
+                    error: new Error(message)
+                });
+            }
+
+            getStatus() {
+                return {
+                    initialized: this.initialized,
+                    errorCount: this.errorCount,
+                    appInfo: { name: "Error Test Page", version: "0.2" }
+                };
+            }
+        }
+
+        // ログ表示機能
+        function addLog(message, isError = false) {
+            const logContent = document.getElementById('errorLogContent');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            logContent.textContent += logEntry;
+            logContent.scrollTop = logContent.scrollHeight;
+
+            // コンソールにも出力
+            if (isError) {
+                console.error(message);
+            } else {
+                console.log(message);
+            }
+        }
+
+        // エラー収集システム初期化
+        window.errorCollector = new SimpleErrorCollector();
+        
+        // ログ機能をエラー収集システムに追加
+        const originalCollectError = window.errorCollector.collectError;
+        window.errorCollector.collectError = function(errorInfo) {
+            addLog(`🚨 エラー検出: ${errorInfo.type} - ${errorInfo.message}`, true);
+            return originalCollectError.call(this, errorInfo);
+        };
+
+        // 初期化完了後にステータス表示
+        setTimeout(() => {
+            const status = window.errorCollector.getStatus();
+            document.getElementById('statusContent').textContent = 
+                `✅ エラー収集システム準備完了\n` +
+                `初期化: ${status.initialized}\n` +
+                `エラー数: ${status.errorCount}\n` +
+                `アプリ情報: ${JSON.stringify(status.appInfo, null, 2)}`;
+            
+            addLog('✅ エラー収集システム準備完了');
+        }, 1000);
+
+        // テスト関数をグローバルに定義
+        window.testJavaScriptError = function() {
+            addLog('🔴 JavaScriptエラーテスト実行中...');
+            // setTimeout で uncaught error を発生させる
+            setTimeout(() => {
+                addLog('💥 TypeError発生予定（0.1秒後）');
+                const obj = null;
+                obj.push('test'); // TypeError - これがグローバルエラーハンドラーでキャッチされる
+            }, 100);
+        };
+
+        window.testPromiseRejection = function() {
+            addLog('🔴 Promise Rejectionテスト実行中...');
+            // 意図的なPromise rejection
+            Promise.reject(new Error('テスト用Promise拒否エラー'));
+            addLog('💥 Promise rejection発生');
+        };
+
+        window.testFirebaseError = function() {
+            addLog('🔴 Firebaseエラーテスト実行中...');
+            // Firebase関連エラー（認証なしでデータベース操作）
+            database.ref('test-collection').push({ test: 'data' })
+                .then(() => {
+                    addLog('⚠️ Firebase操作が成功しました（予期しない動作）');
+                })
+                .catch(error => {
+                    addLog(`💥 Firebase操作エラー: ${error.message}`, true);
+                });
+        };
+
+        window.testManualReport = function() {
+            addLog('🔴 手動エラー報告テスト実行中...');
+            if (window.errorCollector) {
+                window.errorCollector.reportError('手動テストエラー', {
+                    testType: 'manual',
+                    timestamp: new Date().toISOString(),
+                    userAction: 'ボタンクリック'
+                });
+                addLog('✅ 手動エラー報告をFirebaseに送信完了');
+                // ポップアップ削除 - ログで十分
+            } else {
+                addLog('❌ エラー収集システムが利用できません', true);
+            }
+        };
+
+        window.showErrorCollectorStatus = function() {
+            addLog('📊 収集システム状況確認中...');
+            if (window.errorCollector) {
+                const status = window.errorCollector.getStatus();
+                const statusText = JSON.stringify(status, null, 2);
+                addLog(`📊 システム状況:\n${statusText}`);
+                // alert削除 - ログだけで十分
+            } else {
+                const errorMsg = 'エラー収集システムが利用できません';
+                addLog(`❌ ${errorMsg}`, true);
+            }
+        };
+
+        window.testConsoleLog = function() {
+            addLog('🔵 デバッグログテスト実行中...');
+            console.log('🚨 デバッグ: テストログ出力');
+            console.warn('⚠️ テスト警告メッセージ');
+            console.error('❌ テストエラーメッセージ（Firebase関連）');
+            addLog('📝 コンソールログ出力完了（F12でコンソール確認）');
+        };
+
+        window.showFirebasePermissionHelp = function() {
+            addLog('🔧 Firebase権限問題 - 代替方法試行中...');
+            
+            // 方法1: 一時的に全体権限で試行
+            addLog('📝 対処法1: Firebase Console設定変更');
+            addLog('   1. https://console.firebase.google.com/ にアクセス');
+            addLog('   2. プロジェクト「shares-b1b97」選択');
+            addLog('   3. Realtime Database → ルール');
+            addLog('   4. 以下に変更:');
+            addLog('   {');
+            addLog('     "rules": {');
+            addLog('       "system": { "errors": { ".write": true } }');
+            addLog('     }');
+            addLog('   }');
+            
+            // 方法2: 認証付きで試行
+            addLog('📝 対処法2: Google認証で権限取得試行中...');
+            tryAuthenticatedWrite();
+        };
+        
+        // 認証付き書き込み試行
+        function tryAuthenticatedWrite() {
+            const auth = firebase.auth();
+            const googleProvider = new firebase.auth.GoogleAuthProvider();
+            
+            auth.signInWithPopup(googleProvider)
+                .then((result) => {
+                    addLog(`✅ 認証成功: ${result.user.displayName}`);
+                    addLog('🔄 認証ユーザーとしてエラー保存試行...');
+                    
+                    // 認証ユーザーとして保存試行
+                    const testError = {
+                        id: `auth_test_${Date.now()}`,
+                        appName: "Error Test Page (Authenticated)",
+                        appVersion: "0.2.1",
+                        timestamp: Date.now(),
+                        type: "auth-test",
+                        message: "認証ユーザーテストエラー",
+                        userId: result.user.uid,
+                        userEmail: result.user.email
+                    };
+                    
+                    return database.ref('system/errors').push(testError);
+                })
+                .then(() => {
+                    addLog('✅ 認証ユーザーとして保存成功！');
+                })
+                .catch((error) => {
+                    addLog(`❌ 認証・保存エラー: ${error.message}`, true);
+                    if (error.code === 'auth/popup-blocked') {
+                        addLog('💡 ポップアップがブロックされました');
+                    }
+                });
+        }
+
+        window.checkFirebaseData = function() {
+            addLog('🔍 Firebase接続確認中...');
+            
+            // Firebase接続テスト
+            database.ref('system/errors').limitToLast(1).once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        addLog('✅ Firebase接続成功 - エラーデータ取得');
+                        addLog(`📊 最新エラー: ${JSON.stringify(data, null, 2)}`);
+                    } else {
+                        addLog('⚠️ Firebase接続成功 - エラーデータなし（権限修正後に確認）');
+                    }
+                })
+                .catch((error) => {
+                    addLog(`❌ Firebase接続エラー: ${error.message}`, true);
+                    if (error.code === 'PERMISSION_DENIED') {
+                        addLog('💡 「🔧 権限エラー対処法」ボタンで修正方法確認');
+                    }
+                });
+            
+            // 保存予定のデータ形式を表示
+            const sampleData = {
+                id: "error_1691234567890_abc123",
+                appName: "Error Test Page",
+                appVersion: "0.2.1",
+                timestamp: Date.now(),
+                dateString: new Date().toISOString(),
+                type: "javascript-error",
+                message: "Cannot read properties of null",
+                stack: "TypeError: Cannot read properties of null...",
+                userAgent: navigator.userAgent.substring(0, 50) + "...",
+                url: window.location.href
+            };
+            
+            addLog(`📋 保存予定データ形式:\n${JSON.stringify(sampleData, null, 2)}`);
+        };
+
+        // ログコピー機能
+        window.copyErrorLog = function() {
+            const logContent = document.getElementById('errorLogContent');
+            const logText = logContent.textContent;
+            
+            // クリップボードにコピー
+            navigator.clipboard.writeText(logText).then(() => {
+                addLog('✅ エラーログをクリップボードにコピー完了');
+                
+                // ボタンフィードバック
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '✅ コピー完了!';
+                button.style.background = '#28a745';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '#17a2b8';
+                }, 2000);
+                
+            }).catch((error) => {
+                addLog(`❌ コピー失敗: ${error.message}`, true);
+                
+                // フォールバック: テキスト選択
+                if (window.getSelection) {
+                    const selection = window.getSelection();
+                    const range = document.createRange();
+                    range.selectNodeContents(logContent);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    addLog('💡 コピー失敗 - テキストを選択しました（Ctrl+Cでコピー）');
+                }
+            });
+        };
+
+        // ログクリア機能
+        window.clearErrorLog = function() {
+            const logContent = document.getElementById('errorLogContent');
+            logContent.textContent = 'エラーテストログをクリアしました...\n';
+            addLog('🗑️ エラーログをクリア');
+        };
+    </script>
+</body>
+</html>

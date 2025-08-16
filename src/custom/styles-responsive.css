@@ -1,0 +1,463 @@
+/* レスポンシブデザイン */
+
+/* ベース（モバイルファースト） */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+    background: #f5f5f5;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+/* モバイル（〜767px） */
+@media (max-width: 767px) {
+    .container {
+        padding: 5px;
+    }
+    
+    /* 縦長レイアウト */
+    .row {
+        flex-direction: column;
+    }
+    
+    .col {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    /* ボタンを全幅に */
+    .btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+    
+    /* カードを縦積み */
+    .card {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    /* 入力フィールドを全幅 */
+    input, select, textarea {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px; /* ズーム防止 */
+    }
+    
+    /* モーダルをフルスクリーン */
+    .modal-content {
+        width: 95%;
+        margin: 10px auto;
+    }
+    
+    /* テーブルをスクロール可能に */
+    .table-wrapper {
+        overflow-x: auto;
+    }
+    
+    /* ナビゲーションをハンバーガーメニューに */
+    .nav-desktop {
+        display: none;
+    }
+    
+    .nav-mobile {
+        display: block;
+    }
+}
+
+/* タブレット（768px〜1023px） */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .container {
+        padding: 15px;
+    }
+    
+    /* 2カラムレイアウト */
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    
+    .col {
+        width: 48%;
+        margin: 1%;
+    }
+    
+    /* ボタンは自動幅 */
+    .btn {
+        padding: 10px 20px;
+        margin: 5px;
+    }
+    
+    /* カードを2列に */
+    .card {
+        width: 48%;
+        margin: 1%;
+        display: inline-block;
+    }
+}
+
+/* デスクトップ（1024px〜） */
+@media (min-width: 1024px) {
+    .container {
+        padding: 20px;
+    }
+    
+    /* 3〜4カラムレイアウト */
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    
+    .col {
+        flex: 1;
+        margin: 10px;
+    }
+    
+    .col-1 { width: 8.33%; }
+    .col-2 { width: 16.66%; }
+    .col-3 { width: 25%; }
+    .col-4 { width: 33.33%; }
+    .col-6 { width: 50%; }
+    .col-8 { width: 66.66%; }
+    .col-12 { width: 100%; }
+    
+    /* カードを3〜4列に */
+    .card {
+        width: 30%;
+        margin: 1.5%;
+        display: inline-block;
+    }
+    
+    /* モーダルは中央に */
+    .modal-content {
+        width: 500px;
+        margin: 50px auto;
+    }
+    
+    /* ナビゲーションを横並びに */
+    .nav-mobile {
+        display: none;
+    }
+    
+    .nav-desktop {
+        display: flex;
+    }
+}
+
+/* 横向きモバイル対応 */
+@media (max-width: 767px) and (orientation: landscape) {
+    .container {
+        padding: 5px;
+        max-height: 100vh;
+        overflow-y: auto;
+    }
+    
+    /* 高さを抑える */
+    .btn {
+        padding: 8px;
+    }
+    
+    .card {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #1a1a1a;
+        color: #ffffff;
+    }
+    
+    .card {
+        background: #2d2d2d;
+        border-color: #444;
+    }
+    
+    input, select, textarea {
+        background: #2d2d2d;
+        color: #ffffff;
+        border-color: #444;
+    }
+}
+
+/* アクセシビリティ：大きいフォント設定 */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* 印刷対応 */
+@media print {
+    .no-print {
+        display: none;
+    }
+    
+    body {
+        background: white;
+        color: black;
+    }
+}
+
+/* パネルシステムのスタイル */
+.panel {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.panel-header {
+    background: #f8f9fa;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.panel-number {
+    font-weight: bold;
+    color: #007bff;
+    margin-right: 10px;
+    font-size: 16px;
+}
+
+.panel-title {
+    flex: 1;
+    font-weight: 500;
+}
+
+.panel-toggle {
+    background: none;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.panel-body {
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+.panel-body.hidden {
+    display: none;
+}
+
+.panel.collapsed .panel-body {
+    display: none;
+}
+
+.panels-header {
+    background: #007bff;
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* モバイル専用（縦長強制） */
+@media (max-width: 767px) {
+    /* 横スクロール完全禁止 */
+    html, body {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+    
+    /* パネルを縦積み */
+    .panels-container {
+        padding: 5px;
+    }
+    
+    .panel {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    /* パネル番号を大きく */
+    .panel-number {
+        font-size: 20px;
+        background: #007bff;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+    
+    /* ボタンを整理 */
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+    }
+    
+    /* フォームを縦長に */
+    .form-field {
+        margin-bottom: 15px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+    }
+    
+    /* アラートを全幅に */
+    .alert-container {
+        position: fixed;
+        top: 50px;
+        left: 0;
+        right: 0;
+        padding: 10px;
+        z-index: 1000;
+    }
+    
+    /* 横向き禁止メッセージ */
+    @media (orientation: landscape) {
+        body::before {
+            content: "📱 縦向きでご利用ください";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 9999;
+            font-size: 18px;
+        }
+    }
+}
+
+/* タブレット・PC（横長OK） */
+@media (min-width: 768px) {
+    .panels-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+    
+    .panel {
+        height: fit-content;
+    }
+    
+    /* デバッグパネルは下部に固定 */
+    .panel-debug {
+        grid-column: 1 / -1;
+    }
+    
+    /* ボタングループを横並び */
+    .btn-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+}
+
+/* コンポーネントスタイル */
+.form {
+    width: 100%;
+}
+
+.form-field {
+    margin-bottom: 15px;
+}
+
+.form-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-control,
+.select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* ローディング */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    margin-left: 10px;
+}
+
+/* アラート */
+.alert {
+    padding: 12px 20px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.alert-info { background: #d1ecf1; border: 1px solid #bee5eb; }
+.alert-success { background: #d4edda; border: 1px solid #c3e6cb; }
+.alert-warning { background: #fff3cd; border: 1px solid #ffeaa7; }
+.alert-error { background: #f8d7da; border: 1px solid #f5c6cb; }
+
+.alert-icon {
+    margin-right: 10px;
+}
+
+.alert-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+.alert-close:hover {
+    opacity: 1;
+}
