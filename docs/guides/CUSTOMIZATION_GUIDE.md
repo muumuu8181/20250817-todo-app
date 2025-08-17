@@ -290,17 +290,33 @@ console.table(todos);
 
 パネル内のコンテンツの高さを調整して、無駄な余白を削減できます。
 
-**タイトル要素の高さ調整:**
+**タイトル要素の高さ調整（現在の実装）:**
 ```css
-.app-title {
-    margin: 0;
-    padding: 0;
-    line-height: 1.1;  /* 行間を詰める */
-}
+/* より強力な縦幅削除（!important使用） */
 .app-header {
-    margin-bottom: 2px;  /* 下部余白を削減 */
+    margin: 0 !important;
+    padding: 0 !important;
+    margin-bottom: 0px !important;
+}
+.app-title {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.0 !important;  /* 最小行間 */
+    height: auto !important;
+    min-height: auto !important;
 }
 ```
+
+**段階的な高さ調整手順:**
+1. **基本調整**: `margin: 0, padding: 0`
+2. **行間最小化**: `line-height: 1.0`
+3. **強制適用**: `!important` 付きで既存CSS上書き
+4. **高さ自動**: `height: auto, min-height: auto`
+
+**調整の効果:**
+- 文字上下の余白が2-3px程度まで縮小
+- パネルの見た目がスッキリ
+- 他のCSSとの競合を回避
 
 **ユーザー表現:**
 - 「パネルの高さを減らして」
