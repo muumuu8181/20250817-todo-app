@@ -302,6 +302,21 @@
         <div class="section-panel panel-L hidden" id="userPanel">
             <span class="panel-number">[2-L]</span>
 
+            <!-- カテゴリマスタ追加セクション -->
+            <div class="category-master-section section-panel panel-M">
+                <span class="panel-number">[2.0-M]</span>
+                <div class="input-card">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <h3 style="margin: 0; white-space: nowrap;">🏷️ カテゴリ追加</h3>
+                        <input type="text" id="categoryInput" placeholder="カテゴリ名を入力..." class="input-field" onkeypress="handleCategoryKeypress(event)" style="flex: 1;">
+                        <button onclick="addCategory()" class="save-button">➕ 追加</button>
+                    </div>
+                    <div id="categoryList" style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        <!-- カテゴリタグがここに表示される -->
+                    </div>
+                </div>
+            </div>
+
             <!-- Todo入力セクション -->
             <div class="todo-input-section section-panel panel-M">
                 <span class="panel-number">[2.1-M]</span>
@@ -311,6 +326,10 @@
                         <input type="text" id="todoInput" placeholder="タスクを入力してください..." class="input-field" onkeypress="handleTodoKeypress(event)" style="flex: 1;">
                     </div>
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <select id="todoCategory" class="input-field" style="width: auto;">
+                            <option value="">📂 カテゴリなし</option>
+                            <!-- カテゴリオプションが動的に追加される -->
+                        </select>
                         <select id="todoPriority" class="input-field" style="width: auto;">
                             <option value="low">🟢 低</option>
                             <option value="medium" selected>🟡 中</option>
@@ -387,6 +406,7 @@
 
         let currentUser = null;
         let todos = [];
+        let categories = [];
         let currentFilter = 'all';
 
         // Todo関連の機能
@@ -399,6 +419,7 @@
         // Todo追加
         window.addTodo = () => {
             const input = document.getElementById('todoInput');
+            const category = document.getElementById('todoCategory');
             const priority = document.getElementById('todoPriority');
             const text = input.value.trim();
             
@@ -410,6 +431,7 @@
             const todo = {
                 id: Date.now().toString(),
                 text: text,
+                category: category.value,
                 priority: priority.value,
                 completed: false,
                 createdAt: new Date().toISOString(),
@@ -473,6 +495,98 @@
             renderTodos();
         };
 
+        // カテゴリ関連の機能
+        window.handleCategoryKeypress = (event) => {
+            if (event.key === 'Enter') {
+                addCategory();
+            }
+        };
+
+        // カテゴリ追加
+        window.addCategory = () => {
+            const input = document.getElementById('categoryInput');
+            const categoryName = input.value.trim();
+            
+            if (!categoryName) {
+                log('❌ カテゴリ名を入力してください');
+                return;
+            }
+
+            if (categories.find(cat => cat.name === categoryName)) {
+                log('❌ 同じカテゴリ名が既に存在します');
+                return;
+            }
+
+            const category = {
+                id: Date.now().toString(),
+                name: categoryName,
+                createdAt: new Date().toISOString(),
+                userEmail: currentUser ? currentUser.email : 'guest'
+            };
+
+            // Firebaseに保存
+            if (currentUser) {
+                saveCategoryToFirebase(category);
+            } else {
+                // ローカルストレージに保存
+                categories.push(category);
+                localStorage.setItem('categories', JSON.stringify(categories));
+                renderCategories();
+                updateCategoryDropdown();
+            }
+
+            input.value = '';
+            log(`✅ カテゴリ追加: ${categoryName}`);
+        };
+
+        // カテゴリ削除
+        window.deleteCategory = (id) => {
+            if (!confirm('このカテゴリを削除しますか？')) return;
+
+            if (currentUser) {
+                const categoryRef = database.ref(`users/${currentUser.uid}/categories/${id}`);
+                categoryRef.remove();
+            } else {
+                categories = categories.filter(cat => cat.id !== id);
+                localStorage.setItem('categories', JSON.stringify(categories));
+                renderCategories();
+                updateCategoryDropdown();
+            }
+            log('🗑️ カテゴリを削除しました');
+        };
+
+        // カテゴリ表示
+        function renderCategories() {
+            const categoryList = document.getElementById('categoryList');
+            
+            if (categories.length === 0) {
+                categoryList.innerHTML = '<span style="color: #666; font-size: 12px;">カテゴリがありません</span>';
+                return;
+            }
+
+            categoryList.innerHTML = categories.map(category => `
+                <span style="background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 12px; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+                    🏷️ ${category.name}
+                    <button onclick="deleteCategory('${category.id}')" style="background: none; border: none; color: #d32f2f; cursor: pointer; padding: 0; font-size: 14px;" title="削除">×</button>
+                </span>
+            `).join('');
+        }
+
+        // カテゴリドロップダウン更新
+        function updateCategoryDropdown() {
+            const dropdown = document.getElementById('todoCategory');
+            
+            // 既存のオプションを保持して新しいカテゴリを追加
+            dropdown.innerHTML = '<option value="">📂 カテゴリなし</option>';
+            
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.name;
+                option.textContent = `🏷️ ${category.name}`;
+                dropdown.appendChild(option);
+            });
+        }
+
         // Todo表示
         function renderTodos() {
             const todoList = document.getElementById('todoList');
@@ -528,6 +642,18 @@
             });
         }
 
+        // Firebase カテゴリ保存
+        function saveCategoryToFirebase(category) {
+            if (!currentUser) return;
+            
+            const categoryRef = database.ref(`users/${currentUser.uid}/categories/${category.id}`);
+            categoryRef.set(category).then(() => {
+                log(`💾 カテゴリをFirebaseに保存: ${category.name}`);
+            }).catch(error => {
+                log(`❌ カテゴリ保存エラー: ${error.message}`);
+            });
+        }
+
         // 認証状態の監視（改良版）
         auth.onAuthStateChanged((user) => {
             currentUser = user;
@@ -536,10 +662,12 @@
                 log(`📧 メール: ${user.email}`);
                 showUserInterface(user);
                 loadUserTodos(user.uid);
+                loadUserCategories(user.uid);
             } else {
                 log('🔒 認証状態: 未ログイン');
                 showLoginInterface();
                 loadLocalTodos();
+                loadLocalCategories();
             }
         });
 
@@ -694,6 +822,20 @@
             }
         }
 
+        // ローカルカテゴリ読み込み
+        function loadLocalCategories() {
+            const savedCategories = localStorage.getItem('categories');
+            if (savedCategories) {
+                categories = JSON.parse(savedCategories);
+                renderCategories();
+                updateCategoryDropdown();
+                log(`🏷️ ローカルカテゴリ読み込み: ${categories.length}件`);
+            } else {
+                renderCategories();
+                updateCategoryDropdown();
+            }
+        }
+
         // Firebase Todo読み込み
         function loadUserTodos(userId) {
             const userRef = database.ref(`users/${userId}/todos`);
@@ -708,6 +850,26 @@
                     todos = [];
                     renderTodos();
                     log('📝 Todoデータ: なし');
+                }
+            });
+        }
+
+        // Firebase カテゴリ読み込み
+        function loadUserCategories(userId) {
+            const categoryRef = database.ref(`users/${userId}/categories`);
+            categoryRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                
+                if (data) {
+                    categories = Object.values(data);
+                    renderCategories();
+                    updateCategoryDropdown();
+                    log(`🏷️ カテゴリデータ読み込み: ${categories.length}件`);
+                } else {
+                    categories = [];
+                    renderCategories();
+                    updateCategoryDropdown();
+                    log('🏷️ カテゴリデータ: なし');
                 }
             });
         }
