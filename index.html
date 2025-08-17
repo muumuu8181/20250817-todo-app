@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todo Manager v0.1</title>
+    <title>Simple Todo App v1.0</title>
     
     <!-- iPhoneホーム画面用の設定 -->
     <link rel="apple-touch-icon" href="icon-180.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Todo Manager">
+    <meta name="apple-mobile-web-app-title" content="Simple Todo App">
     
     <!-- Android/その他用 -->
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -193,6 +193,77 @@
         .input-field { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin: 5px 0; font-size: 16px; }
         .save-button { background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 16px; }
         .save-button:hover { background: #218838; }
+        
+        /* Todo用スタイル */
+        .filter-btn { background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .filter-btn.active { background: #007bff; }
+        .filter-btn:hover { background: #0056b3; }
+        
+        .todo-item { 
+            background: white; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            padding: 12px; 
+            margin: 8px 0; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .todo-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        
+        .todo-item.completed { 
+            background: #f8f9fa; 
+            opacity: 0.7; 
+        }
+        .todo-item.completed .todo-text { 
+            text-decoration: line-through; 
+            color: #6c757d; 
+        }
+        
+        .todo-content { 
+            display: flex; 
+            align-items: center; 
+            flex: 1; 
+            gap: 10px; 
+        }
+        
+        .todo-checkbox { 
+            width: 20px; 
+            height: 20px; 
+            cursor: pointer; 
+        }
+        
+        .todo-text { 
+            flex: 1; 
+            font-size: 16px; 
+        }
+        
+        .todo-priority { 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 12px; 
+            font-weight: bold; 
+        }
+        .todo-priority.high { background: #ffe6e6; color: #dc3545; }
+        .todo-priority.medium { background: #fff3cd; color: #856404; }
+        .todo-priority.low { background: #e6f7e6; color: #28a745; }
+        
+        .todo-actions { 
+            display: flex; 
+            gap: 5px; 
+        }
+        
+        .todo-btn { 
+            background: #dc3545; 
+            color: white; 
+            border: none; 
+            padding: 6px 10px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 12px; 
+        }
+        .todo-btn:hover { background: #c82333; }
         .auth-button { background: #4285f4; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
         .auth-button:hover { background: #357ae8; }
         .logout-button { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; margin: 5px; }
@@ -212,8 +283,8 @@
         <div class="section-panel panel-L">
             <span class="panel-number">[1-L]</span>
             <div class="app-header">
-                <h1 class="app-title">🎨 Awesome Paint Studio v0.1</h1>
-                <p class="app-subtitle">最高にかっこいい音響付きペイントスタジオ</p>
+                <h1 class="app-title">📝 Simple Todo App v1.0</h1>
+                <p class="app-subtitle">シンプルで使いやすいタスク管理アプリ</p>
             </div>
             <!-- 認証セクション -->
             <div class="auth-section" id="authSection">
@@ -229,62 +300,43 @@
             </div>
         </div>
         
-        <!-- パネル2: ペイントスタジオ（カスタマイズ領域） -->
+        <!-- パネル2: Todoアプリ（メイン機能） -->
         <div class="section-panel panel-L hidden" id="userPanel">
             <span class="panel-number">[2-L]</span>
 
-            <!-- ペイントツール -->
-            <div class="paint-tools" id="paintTools">
-                <div class="tool-panel section-panel panel-M" data-grid="B3">
-                    <span class="panel-number">[2.1-M]</span>
-                    <h3 style="margin-top: 0; margin-bottom: 8px;">🎨 Awesome Paint Studio</h3>
-                    
-                    <!-- ツール選択 -->
-                    <div class="brush-tools">
-                        <button type="button" class="tool-btn active" onclick="selectTool('brush')" data-tool="brush" style="background: #ff0080;">🖌️ ブラシ</button>
-                        <button type="button" class="tool-btn" onclick="selectTool('pencil')" data-tool="pencil" style="background: #00ffff;">✏️ ペンシル</button>
-                        <button type="button" class="tool-btn" onclick="selectTool('spray')" data-tool="spray" style="background: #ff8000;">🎨 スプレー</button>
-                        <button type="button" class="tool-btn" onclick="selectTool('glow')" data-tool="glow" style="background: #ffff00;">✨ グロー</button>
-                        <button type="button" class="tool-btn" onclick="selectTool('neon')" data-tool="neon" style="background: #80ff00;">💫 ネオン</button>
-                        <button type="button" class="tool-btn" onclick="selectTool('particle')" data-tool="particle" style="background: #ff0040;">🌟 パーティクル</button>
-                    </div>
-                    
-                    <!-- コントロールパネル -->
-                    <div class="controls section-panel panel-S" data-grid="B6-D6">
-                        <span class="panel-number">[2.1.1-S]</span>
-                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                            <div>
-                                <label>🖌️ サイズ: <span id="brushSizeDisplay">10</span></label>
-                                <input type="range" id="brushSize" min="1" max="50" value="10" style="width: 100px;">
-                            </div>
-                            <div>
-                                <label>🎨 カラー:</label>
-                                <input type="color" id="colorPicker" value="#ff0080" style="width: 40px; height: 30px;">
-                            </div>
-                            <div>
-                                <label>💧 透明度: <span id="opacityDisplay">100%</span></label>
-                                <input type="range" id="opacity" min="0" max="100" value="100" style="width: 100px;">
-                            </div>
-                        </div>
+            <!-- Todo入力セクション -->
+            <div class="todo-input-section section-panel panel-M">
+                <span class="panel-number">[2.1-M]</span>
+                <h3 style="margin-top: 0; margin-bottom: 8px;">📝 新しいタスクを追加</h3>
+                
+                <div class="input-card">
+                    <input type="text" id="todoInput" placeholder="タスクを入力してください..." class="input-field" onkeypress="handleTodoKeypress(event)">
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <select id="todoPriority" class="input-field" style="width: auto;">
+                            <option value="low">🟢 低</option>
+                            <option value="medium" selected>🟡 中</option>
+                            <option value="high">🔴 高</option>
+                        </select>
+                        <button onclick="addTodo()" class="save-button">➕ タスク追加</button>
                     </div>
                 </div>
+            </div>
+
+            <!-- Todoリスト表示 -->
+            <div class="todo-list-section section-panel panel-M">
+                <span class="panel-number">[2.2-M]</span>
+                <h3 style="margin-top: 0; margin-bottom: 8px;">📋 タスク一覧</h3>
                 
-                <!-- キャンバス -->
-                <div class="canvas-container section-panel panel-M" data-grid="B8">
-                    <span class="panel-number">[2.2-M]</span>
-                    <div style="text-align: center; background: #000011; padding: 10px; border-radius: 10px;">
-                        <canvas id="paintCanvas" width="600" height="400" 
-                            style="border: 2px solid #ff0080; border-radius: 8px; background: #000022; cursor: crosshair;">
-                        </canvas>
-                    </div>
-                    
-                    <!-- アクションボタン -->
-                    <div style="text-align: center; margin-top: 10px;">
-                        <button onclick="clearCanvas()" style="background: #ff4444; color: white; border: none; padding: 8px 16px; border-radius: 5px; margin: 5px;">🗑️ クリア</button>
-                        <button onclick="savePainting()" style="background: #00ff80; color: black; border: none; padding: 8px 16px; border-radius: 5px; margin: 5px;">🎨 作品保存</button>
-                        <button onclick="downloadPainting()" style="background: #ffff00; color: black; border: none; padding: 8px 16px; border-radius: 5px; margin: 5px;">💾 ダウンロード</button>
-                        <input type="text" id="paintingTitle" placeholder="作品タイトル" style="margin: 5px; padding: 8px; border-radius: 5px; border: 1px solid #ff0080;">
-                    </div>
+                <!-- フィルターボタン -->
+                <div style="margin-bottom: 10px;">
+                    <button onclick="filterTodos('all')" class="filter-btn active" data-filter="all">全て</button>
+                    <button onclick="filterTodos('pending')" class="filter-btn" data-filter="pending">未完了</button>
+                    <button onclick="filterTodos('completed')" class="filter-btn" data-filter="completed">完了済み</button>
+                </div>
+                
+                <!-- Todoリスト -->
+                <div id="todoList" class="todo-list">
+                    <p style="text-align: center; color: #666;">まだタスクがありません</p>
                 </div>
             </div>
         </div>
@@ -294,7 +346,7 @@
             <span class="panel-number">[3-L]</span>
             <h3>📋 アプリログ <button class="universal-copy-btn" onclick="copyLogs()" style="background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">📋 ログをコピー</button></h3>
             <div class="data-area" id="logArea">
-            アプリテンプレート v0.37 起動完了...<br>
+            Simple Todo App v1.0 起動完了...<br>
             🔥 Firebase設定完了<br>
             🔐 Google認証準備完了<br>
             </div>
@@ -335,42 +387,147 @@
         const database = firebase.database();
 
         let currentUser = null;
-        let selectedTimingValue = '';
+        let todos = [];
+        let currentFilter = 'all';
 
-        // キーボードでの値調整機能
-        window.handleWeightKeypress = (event) => {
-            const weightInput = document.getElementById('weightValue');
-            const currentValue = parseFloat(weightInput.value) || 50.0;
-            
-            if (event.key === 'ArrowUp') {
-                event.preventDefault();
-                weightInput.value = (currentValue + 0.1).toFixed(1);
-            } else if (event.key === 'ArrowDown') {
-                event.preventDefault();
-                weightInput.value = Math.max(0, currentValue - 0.1).toFixed(1);
+        // Todo関連の機能
+        window.handleTodoKeypress = (event) => {
+            if (event.key === 'Enter') {
+                addTodo();
             }
         };
 
-        // タイミング選択機能（改良版）
-        window.selectTiming = (timing) => {
-            selectedTimingValue = timing;
-            document.getElementById('selectedTiming').value = timing;
+        // Todo追加
+        window.addTodo = () => {
+            const input = document.getElementById('todoInput');
+            const priority = document.getElementById('todoPriority');
+            const text = input.value.trim();
             
-            // すべてのボタンから選択状態を削除
-            document.querySelectorAll('.timing-btn').forEach(btn => {
-                btn.classList.remove('selected');
-                btn.style.opacity = '0.7';
+            if (!text) {
+                log('❌ タスクを入力してください');
+                return;
+            }
+
+            const todo = {
+                id: Date.now().toString(),
+                text: text,
+                priority: priority.value,
+                completed: false,
+                createdAt: new Date().toISOString(),
+                userEmail: currentUser ? currentUser.email : 'guest'
+            };
+
+            // Firebaseに保存
+            if (currentUser) {
+                saveTodoToFirebase(todo);
+            } else {
+                // ローカルストレージに保存
+                todos.push(todo);
+                localStorage.setItem('todos', JSON.stringify(todos));
+                renderTodos();
+            }
+
+            input.value = '';
+            priority.value = 'medium';
+            log(`✅ タスク追加: ${text}`);
+        };
+
+        // Todo完了切り替え
+        window.toggleTodo = (id) => {
+            if (currentUser) {
+                const todoRef = database.ref(`users/${currentUser.uid}/todos/${id}`);
+                todoRef.once('value', (snapshot) => {
+                    const todo = snapshot.val();
+                    if (todo) {
+                        todoRef.update({ completed: !todo.completed });
+                    }
+                });
+            } else {
+                todos = todos.map(todo => 
+                    todo.id === id ? { ...todo, completed: !todo.completed } : todo
+                );
+                localStorage.setItem('todos', JSON.stringify(todos));
+                renderTodos();
+            }
+        };
+
+        // Todo削除
+        window.deleteTodo = (id) => {
+            if (!confirm('このタスクを削除しますか？')) return;
+
+            if (currentUser) {
+                const todoRef = database.ref(`users/${currentUser.uid}/todos/${id}`);
+                todoRef.remove();
+            } else {
+                todos = todos.filter(todo => todo.id !== id);
+                localStorage.setItem('todos', JSON.stringify(todos));
+                renderTodos();
+            }
+            log('🗑️ タスクを削除しました');
+        };
+
+        // フィルター切り替え
+        window.filterTodos = (filter) => {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+            renderTodos();
+        };
+
+        // Todo表示
+        function renderTodos() {
+            const todoList = document.getElementById('todoList');
+            let displayTodos = todos;
+
+            // フィルター適用
+            if (currentFilter === 'completed') {
+                displayTodos = todos.filter(todo => todo.completed);
+            } else if (currentFilter === 'pending') {
+                displayTodos = todos.filter(todo => !todo.completed);
+            }
+
+            if (displayTodos.length === 0) {
+                todoList.innerHTML = '<p style="text-align: center; color: #666;">タスクがありません</p>';
+                return;
+            }
+
+            // 優先度順でソート
+            const priorityOrder = { high: 3, medium: 2, low: 1 };
+            displayTodos.sort((a, b) => {
+                if (a.completed !== b.completed) return a.completed - b.completed;
+                return priorityOrder[b.priority] - priorityOrder[a.priority];
             });
+
+            todoList.innerHTML = displayTodos.map(todo => `
+                <div class="todo-item ${todo.completed ? 'completed' : ''}">
+                    <div class="todo-content">
+                        <input type="checkbox" class="todo-checkbox" 
+                               ${todo.completed ? 'checked' : ''} 
+                               onchange="toggleTodo('${todo.id}')">
+                        <span class="todo-text">${todo.text}</span>
+                        <span class="todo-priority ${todo.priority}">
+                            ${todo.priority === 'high' ? '🔴' : todo.priority === 'medium' ? '🟡' : '🟢'} 
+                            ${todo.priority === 'high' ? '高' : todo.priority === 'medium' ? '中' : '低'}
+                        </span>
+                    </div>
+                    <div class="todo-actions">
+                        <button class="todo-btn" onclick="deleteTodo('${todo.id}')">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Firebase Todo保存
+        function saveTodoToFirebase(todo) {
+            if (!currentUser) return;
             
-            // 選択されたボタンに選択状態を追加
-            const selectedBtn = document.querySelector(`[data-timing="${timing}"]`);
-            if (selectedBtn) {
-                selectedBtn.classList.add('selected');
-                selectedBtn.style.opacity = '1';
-            }
-            
-            log(`⏰ 測定タイミング選択: ${timing}`);
-        };
+            const todoRef = database.ref(`users/${currentUser.uid}/todos/${todo.id}`);
+            todoRef.set(todo).then(() => {
+                log(`💾 Firebaseに保存: ${todo.text}`);
+            }).catch(error => {
+                log(`❌ 保存エラー: ${error.message}`);
+            });
+        }
 
         // 認証状態の監視（改良版）
         auth.onAuthStateChanged((user) => {
@@ -379,10 +536,11 @@
                 log(`✅ 認証状態確認: ${user.displayName} でログイン中`);
                 log(`📧 メール: ${user.email}`);
                 showUserInterface(user);
-                loadUserWeightData(user.uid);
+                loadUserTodos(user.uid);
             } else {
                 log('🔒 認証状態: 未ログイン');
                 showLoginInterface();
+                loadLocalTodos();
             }
         });
 
@@ -527,112 +685,30 @@
             }
         };
 
-        // データ保存
-        window.saveWeightData = async () => {
-            if (!currentUser) {
-                log('❌ ログインが必要です');
-                return;
+        // ローカルTodo読み込み
+        function loadLocalTodos() {
+            const savedTodos = localStorage.getItem('todos');
+            if (savedTodos) {
+                todos = JSON.parse(savedTodos);
+                renderTodos();
+                log(`📝 ローカルTodo読み込み: ${todos.length}件`);
             }
+        }
 
-            const date = document.getElementById('dateInput').value;
-            const value = document.getElementById('weightValue').value;
-            const memo = document.getElementById('memoInput').value;
-
-            if (!date || !value) {
-                log('❌ 日付と値を入力してください');
-                return;
-            }
-
-            try {
-                log('💾 データを保存中...');
-                
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('ja-JP', { 
-                    hour12: false, 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                
-                const weightData = {
-                    date: date,
-                    time: timeString,
-                    value: parseFloat(value),
-                    timing: selectedTimingValue || '',
-                    memo: memo || '',
-                    userEmail: currentUser.email,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    createdAt: now.toISOString()
-                };
-
-                const userRef = database.ref(`users/${currentUser.uid}/weights`);
-                await userRef.push(weightData);
-                log(`✅ 保存完了: ${date} ${timeString} - ${value} ${selectedTimingValue ? `(${selectedTimingValue})` : ''}`);
-                
-                // 入力フィールドをクリア（値は50.0に戻す）
-                document.getElementById('weightValue').value = '50.0';
-                document.getElementById('memoInput').value = '';
-                document.getElementById('selectedTiming').value = '';
-                selectedTimingValue = '';
-                
-                // ボタンのスタイルをリセット
-                document.querySelectorAll('.timing-btn').forEach(btn => {
-                    btn.style.opacity = '0.7';
-                    btn.classList.remove('selected');
-                });
-                
-                // データを再読み込み
-                loadUserWeightData(currentUser.uid);
-            } catch (error) {
-                log(`❌ 保存エラー: ${error.message}`);
-            }
-        };
-
-        // データ削除
-        window.deleteWeightEntry = async (entryId) => {
-            if (!currentUser) {
-                log('❌ ログインが必要です');
-                return;
-            }
-            
-            if (!confirm('この記録を削除しますか？')) {
-                return;
-            }
-            
-            try {
-                log(`🗑️ データ削除中: ${entryId}`);
-                const entryRef = database.ref(`users/${currentUser.uid}/weights/${entryId}`);
-                await entryRef.remove();
-                log(`✅ 削除完了: ${entryId}`);
-            } catch (error) {
-                log(`❌ 削除エラー: ${error.message}`);
-            }
-        };
-
-        // ユーザーのデータを読み込み
-        function loadUserWeightData(userId) {
-            const userRef = database.ref(`users/${userId}/weights`);
+        // Firebase Todo読み込み
+        function loadUserTodos(userId) {
+            const userRef = database.ref(`users/${userId}/todos`);
             userRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                const historyDiv = document.getElementById('weightHistory');
                 
                 if (data) {
-                    const entries = Object.entries(data)
-                        .map(([key, value]) => ({ id: key, ...value }))
-                        .sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date));
-                    
-                    historyDiv.innerHTML = entries.map(entry => {
-                        let displayText = `${entry.date}`;
-                        if (entry.time) displayText += ` ${entry.time}`;
-                        displayText += `: ${entry.value || entry.weight}`;
-                        if (entry.timing) displayText += ` (${entry.timing})`;
-                        if (entry.memo) displayText += ` - ${entry.memo}`;
-                        return `<div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 0; border-bottom: 1px solid #eee;"><span>${displayText}</span><button onclick="deleteWeightEntry('${entry.id}')" style="background: #dc3545; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 10px;">🗑️</button></div>`;
-                    }).join('');
-                    
-                    log(`📈 履歴読み込み完了: ${entries.length}件`);
+                    todos = Object.values(data);
+                    renderTodos();
+                    log(`📝 Todoデータ読み込み: ${todos.length}件`);
                 } else {
-                    historyDiv.innerHTML = 'まだデータがありません';
-                    log('📈 履歴: データなし');
+                    todos = [];
+                    renderTodos();
+                    log('📝 Todoデータ: なし');
                 }
             });
         }
@@ -643,330 +719,11 @@
             document.getElementById('userInfo').classList.remove('hidden');
             document.getElementById('userPanel').classList.remove('hidden');
             document.getElementById('userName').textContent = user.displayName;
-            
-            // ペイントキャンバス初期化
-            setTimeout(() => {
-                initPaintCanvas();
-            }, 100);
         }
 
         // ===============================================
-        // 🎨 ペイント機能（基本実装）
+        // 📝 Todo機能の完了
         // ===============================================
-        let canvas = null;
-        let ctx = null;
-        let isDrawing = false;
-        let currentTool = 'brush';
-        let currentColor = '#ff0080';
-        let currentSize = 10;
-        let currentOpacity = 1.0;
-        let particles = [];
-        
-        // ペイント機能初期化
-        function initPaintCanvas() {
-            canvas = document.getElementById('paintCanvas');
-            if (!canvas) return;
-            
-            ctx = canvas.getContext('2d');
-            
-            // イベントリスナー設定
-            canvas.addEventListener('mousedown', startDrawing);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stopDrawing);
-            canvas.addEventListener('mouseout', stopDrawing);
-            
-            // タッチイベント（スマホ対応）
-            canvas.addEventListener('touchstart', handleTouch);
-            canvas.addEventListener('touchmove', handleTouch);
-            canvas.addEventListener('touchend', stopDrawing);
-            
-            // コントロールイベント
-            document.getElementById('brushSize').addEventListener('input', updateBrushSize);
-            document.getElementById('colorPicker').addEventListener('input', updateColor);
-            document.getElementById('opacity').addEventListener('input', updateOpacity);
-            
-            // パーティクルアニメーション開始
-            animateParticles();
-            
-            log('🎨 ペイントキャンバス初期化完了');
-        }
-        
-        // 描画開始
-        function startDrawing(e) {
-            isDrawing = true;
-            const pos = getMousePos(e);
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
-            
-            // 音響効果
-            playSound('brush');
-        }
-        
-        // 描画中
-        function draw(e) {
-            if (!isDrawing) return;
-            
-            const pos = getMousePos(e);
-            
-            switch(currentTool) {
-                case 'brush':
-                    drawBrush(pos.x, pos.y);
-                    break;
-                case 'pencil':
-                    drawPencil(pos.x, pos.y);
-                    break;
-                case 'spray':
-                    drawSpray(pos.x, pos.y);
-                    break;
-                case 'glow':
-                    drawGlow(pos.x, pos.y);
-                    break;
-                case 'neon':
-                    drawNeon(pos.x, pos.y);
-                    break;
-                case 'particle':
-                    drawParticle(pos.x, pos.y);
-                    break;
-            }
-        }
-        
-        // 描画停止
-        function stopDrawing() {
-            isDrawing = false;
-            ctx.beginPath();
-        }
-        
-        // マウス座標取得
-        function getMousePos(e) {
-            const rect = canvas.getBoundingClientRect();
-            return {
-                x: (e.clientX || e.touches[0].clientX) - rect.left,
-                y: (e.clientY || e.touches[0].clientY) - rect.top
-            };
-        }
-        
-        // タッチイベント処理
-        function handleTouch(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 'mousemove', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            canvas.dispatchEvent(mouseEvent);
-        }
-        
-        // ツール選択
-        window.selectTool = (tool) => {
-            currentTool = tool;
-            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`[data-tool="${tool}"]`).classList.add('active');
-            log(`🖌️ ツール選択: ${tool}`);
-        };
-        
-        // ブラシサイズ更新
-        function updateBrushSize() {
-            currentSize = parseInt(document.getElementById('brushSize').value);
-            document.getElementById('brushSizeDisplay').textContent = currentSize;
-        }
-        
-        // カラー更新
-        function updateColor() {
-            currentColor = document.getElementById('colorPicker').value;
-        }
-        
-        // 透明度更新
-        function updateOpacity() {
-            currentOpacity = parseInt(document.getElementById('opacity').value) / 100;
-            document.getElementById('opacityDisplay').textContent = Math.round(currentOpacity * 100) + '%';
-        }
-        
-        // 基本ブラシ描画
-        function drawBrush(x, y) {
-            ctx.globalAlpha = currentOpacity;
-            ctx.strokeStyle = currentColor;
-            ctx.lineWidth = currentSize;
-            ctx.lineCap = 'round';
-            ctx.lineTo(x, y);
-            ctx.stroke();
-        }
-        
-        // ペンシル描画
-        function drawPencil(x, y) {
-            ctx.globalAlpha = currentOpacity;
-            ctx.strokeStyle = currentColor;
-            ctx.lineWidth = Math.max(1, currentSize / 3);
-            ctx.lineCap = 'round';
-            ctx.lineTo(x, y);
-            ctx.stroke();
-        }
-        
-        // スプレー描画
-        function drawSpray(x, y) {
-            ctx.globalAlpha = currentOpacity * 0.6;
-            ctx.fillStyle = currentColor;
-            
-            for (let i = 0; i < currentSize; i++) {
-                const offsetX = (Math.random() - 0.5) * currentSize * 2;
-                const offsetY = (Math.random() - 0.5) * currentSize * 2;
-                ctx.fillRect(x + offsetX, y + offsetY, 1, 1);
-            }
-        }
-        
-        // グロー効果
-        function drawGlow(x, y) {
-            ctx.globalAlpha = currentOpacity;
-            ctx.shadowColor = currentColor;
-            ctx.shadowBlur = currentSize * 2;
-            ctx.strokeStyle = currentColor;
-            ctx.lineWidth = currentSize;
-            ctx.lineCap = 'round';
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-        }
-        
-        // ネオン効果
-        function drawNeon(x, y) {
-            // 外側のグロー
-            ctx.globalAlpha = currentOpacity * 0.3;
-            ctx.shadowColor = currentColor;
-            ctx.shadowBlur = currentSize * 3;
-            ctx.strokeStyle = currentColor;
-            ctx.lineWidth = currentSize * 2;
-            ctx.lineCap = 'round';
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            
-            // 内側の明るい線
-            ctx.globalAlpha = currentOpacity;
-            ctx.shadowBlur = currentSize;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = currentSize / 2;
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-        }
-        
-        // パーティクル効果
-        function drawParticle(x, y) {
-            // パーティクルを追加
-            for (let i = 0; i < 5; i++) {
-                particles.push({
-                    x: x + (Math.random() - 0.5) * 20,
-                    y: y + (Math.random() - 0.5) * 20,
-                    vx: (Math.random() - 0.5) * 4,
-                    vy: (Math.random() - 0.5) * 4,
-                    life: 1.0,
-                    color: currentColor,
-                    size: Math.random() * currentSize / 2
-                });
-            }
-        }
-        
-        // パーティクルアニメーション
-        function animateParticles() {
-            // パーティクル更新
-            particles.forEach((particle, index) => {
-                particle.x += particle.vx;
-                particle.y += particle.vy;
-                particle.life -= 0.02;
-                particle.size *= 0.98;
-                
-                if (particle.life <= 0) {
-                    particles.splice(index, 1);
-                } else {
-                    ctx.globalAlpha = particle.life * currentOpacity;
-                    ctx.fillStyle = particle.color;
-                    ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
-                }
-            });
-            
-            requestAnimationFrame(animateParticles);
-        }
-        
-        // キャンバスクリア
-        window.clearCanvas = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles = [];
-            playSound('clear');
-            log('🗑️ キャンバスをクリアしました');
-        };
-        
-        // 作品保存（Firebase）
-        window.savePainting = async () => {
-            if (!currentUser) {
-                log('❌ ログインが必要です');
-                return;
-            }
-            
-            const title = document.getElementById('paintingTitle').value || '無題の作品';
-            const imageData = canvas.toDataURL();
-            
-            try {
-                const paintingData = {
-                    title: title,
-                    canvasData: imageData,
-                    date: new Date().toLocaleDateString(),
-                    time: new Date().toLocaleTimeString(),
-                    userEmail: currentUser.email,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    createdAt: new Date().toISOString()
-                };
-                
-                const userRef = database.ref(`users/${currentUser.uid}/paintings`);
-                await userRef.push(paintingData);
-                
-                playSound('save');
-                log(`✅ 作品保存完了: ${title}`);
-                document.getElementById('paintingTitle').value = '';
-            } catch (error) {
-                log(`❌ 保存エラー: ${error.message}`);
-            }
-        };
-        
-        // 作品ダウンロード
-        window.downloadPainting = () => {
-            const title = document.getElementById('paintingTitle').value || 'awesome-painting';
-            const link = document.createElement('a');
-            link.download = `${title}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
-            log(`💾 作品ダウンロード: ${title}.png`);
-        };
-        
-        // 音響効果
-        function playSound(type) {
-            try {
-                // Web Audio APIを使用した簡単な音生成
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                switch(type) {
-                    case 'brush':
-                        oscillator.frequency.value = 220;
-                        gainNode.gain.value = 0.05;
-                        break;
-                    case 'save':
-                        oscillator.frequency.value = 440;
-                        gainNode.gain.value = 0.1;
-                        break;
-                    case 'clear':
-                        oscillator.frequency.value = 110;
-                        gainNode.gain.value = 0.05;
-                        break;
-                }
-                
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.1);
-            } catch (e) {
-                // 音響が使えない場合は無視
-            }
-        }
 
         function showLoginInterface() {
             document.getElementById('authSection').classList.remove('hidden');
@@ -1543,7 +1300,7 @@ ${document.getElementById('logArea').innerText}`;
             log('📐 === テスト終了 ===');
         };
         
-        log('🚀 アプリテンプレート v0.33 起動完了');
+        log('🚀 Simple Todo App v1.0 起動完了');
         log('🔐 認証システム準備完了');
         
         // プロトコルチェック（自動診断）
