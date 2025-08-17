@@ -305,10 +305,11 @@
             <!-- Todo入力セクション -->
             <div class="todo-input-section section-panel panel-M">
                 <span class="panel-number">[2.1-M]</span>
-                <h3 style="margin-top: 0; margin-bottom: 8px;">📝 新しいタスクを追加</h3>
-                
                 <div class="input-card">
-                    <input type="text" id="todoInput" placeholder="タスクを入力してください..." class="input-field" onkeypress="handleTodoKeypress(event)">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <h3 style="margin: 0; white-space: nowrap;">📝 新しいタスクを追加</h3>
+                        <input type="text" id="todoInput" placeholder="タスクを入力してください..." class="input-field" onkeypress="handleTodoKeypress(event)" style="flex: 1;">
+                    </div>
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
                         <select id="todoPriority" class="input-field" style="width: auto;">
                             <option value="low">🟢 低</option>
